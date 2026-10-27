@@ -1,0 +1,2619 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carbon Footprint Estimator | Person-Wise Analysis & Sustainability Dashboard</title>
+<style>
+:root {
+  --primary: #15803d;
+  --primary-dark: #14532d;
+  --primary-light: #22c55e;
+  --mint: #ecfdf5;
+  --mint-border: #a7f3d0;
+  --dark: #0f291e;
+  --muted: #4b6354;
+  --bg: #f4f8f5;
+  --card-bg: #ffffff;
+  --line: #e2ece5;
+  --shadow-sm: 0 2px 8px rgba(15, 41, 30, 0.04);
+  --shadow: 0 10px 30px rgba(15, 41, 30, 0.07);
+  --transport: #0284c7;
+  --electricity: #eab308;
+  --food: #10b981;
+  --waste: #8b5cf6;
+  --flight: #f97316;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg);
+  color: #1e2922;
+  line-height: 1.6;
+}
+
+/* Header & Nav */
+header {
+  background: #ffffff;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+}
+.nav {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.brand {
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--primary-dark);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.brand-icon {
+  background: var(--mint);
+  border: 1px solid var(--mint-border);
+  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+}
+.nav-tabs {
+  display: flex;
+  gap: 6px;
+  background: #f0f5f1;
+  padding: 4px;
+  border-radius: 12px;
+}
+.nav-tab-btn {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-tab-btn:hover {
+  color: var(--primary-dark);
+  background: rgba(255,255,255,0.6);
+}
+.nav-tab-btn.active {
+  background: #ffffff;
+  color: var(--primary-dark);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+}
+.viva-btn-badge {
+  background: #fef08a;
+  color: #854d0e;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+/* Hero Section */
+.hero {
+  background: linear-gradient(135deg, #e8f7ee 0%, #f7faf8 55%, #daf1e4 100%);
+  border-bottom: 1px solid var(--line);
+  padding: 38px 24px 34px;
+}
+.hero-inner {
+  max-width: 1220px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 32px;
+  align-items: center;
+}
+.eyebrow {
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #dcfce7;
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+.hero h1 {
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1.15;
+  color: var(--dark);
+  font-weight: 850;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+.hero p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 620px;
+  margin-bottom: 20px;
+}
+.persona-pills-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.persona-pills-bar span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.persona-chip {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #2e4d3c;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.persona-chip:hover {
+  border-color: var(--primary-light);
+  background: var(--mint);
+  transform: translateY(-1px);
+}
+.persona-chip.active {
+  background: var(--primary-dark);
+  color: #ffffff;
+  border-color: var(--primary-dark);
+}
+
+.hero-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid #d4e7db;
+  box-shadow: 0 16px 40px rgba(15, 41, 30, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 5px;
+  background: linear-gradient(90deg, #10b981, #0284c7, #eab308);
+}
+.hero-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.hero-tag {
+  background: var(--mint);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--mint-border);
+}
+.hero-total-number {
+  font-size: 42px;
+  font-weight: 900;
+  color: var(--dark);
+  line-height: 1;
+  margin: 10px 0 6px;
+}
+.hero-total-unit {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.hero-active-person {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.eco-grade-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.grade-green { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+.grade-yellow { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
+.grade-red { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+
+.hero-stats-mini {
+  border-top: 1px solid #edf4ef;
+  padding-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 12px;
+}
+.hero-stats-mini div b {
+  display: block;
+  font-size: 15px;
+  color: var(--dark);
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+/* Layout Container */
+.container {
+  max-width: 1220px;
+  margin: 28px auto 60px;
+  padding: 0 24px;
+}
+
+/* Tab Panels */
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  background: var(--primary);
+  color: white;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.btn:hover {
+  background: var(--primary-dark);
+  box-shadow: 0 4px 14px rgba(21, 128, 61, 0.25);
+}
+.btn.secondary {
+  background: #ffffff;
+  color: var(--dark);
+  border: 1px solid #cce3d4;
+}
+.btn.secondary:hover {
+  background: #f7faf8;
+  border-color: #a4cdb1;
+}
+.btn.warning {
+  background: #d97706;
+  color: #fff;
+}
+.btn.warning:hover {
+  background: #b45309;
+}
+.btn-sm {
+  padding: 7px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+/* Section Header */
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.section-head h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 4px;
+}
+.section-head p {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Grid & Cards */
+.layout-2col {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+}
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  margin-bottom: 20px;
+  border-bottom: 1px solid #edf4ef;
+  padding-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card-header h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-header p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Form Styles */
+.form-section-title {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--primary);
+  margin: 18px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-section-title:first-of-type {
+  margin-top: 0;
+}
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.form-group {
+  margin-bottom: 14px;
+}
+.form-group label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: #25392d;
+  margin-bottom: 6px;
+}
+.form-group label span.val-display {
+  color: var(--primary);
+  font-weight: 800;
+}
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #d3e2d6;
+  border-radius: 10px;
+  font-size: 14px;
+  background: #fbfdfb;
+  color: #1b3023;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.12);
+  background: #ffffff;
+}
+.form-range {
+  width: 100%;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.form-hint {
+  font-size: 11px;
+  color: #718779;
+  margin-top: 4px;
+  display: block;
+}
+
+/* Dashboard Summary Cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  position: relative;
+}
+.kpi-card.highlight {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+  border-color: #bbf7d0;
+}
+.kpi-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.kpi-value {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--dark);
+  margin: 6px 0 2px;
+  line-height: 1.1;
+}
+.kpi-sub {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Donut & Chart Visualizer */
+.chart-container {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 16px 0;
+  flex-wrap: wrap;
+}
+.donut-box {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+.donut-svg {
+  transform: rotate(-90deg);
+  width: 180px;
+  height: 180px;
+}
+.donut-circle-bg {
+  fill: none;
+  stroke: #eef4f0;
+  stroke-width: 26;
+}
+.donut-center-info {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+.donut-center-info strong {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--dark);
+  line-height: 1;
+}
+.donut-center-info span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.legend-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 220px;
+}
+.legend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.legend-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+.legend-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.legend-pct {
+  font-size: 11px;
+  color: var(--muted);
+  background: #f1f6f2;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Category Progress Bars */
+.category-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+.bar-row-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+.bar-row-info span {
+  font-weight: 600;
+  color: #2b4234;
+}
+.bar-track {
+  height: 10px;
+  background: #edf3ee;
+  border-radius: 99px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* Comparison Benchmarks */
+.benchmark-block {
+  background: #f9fcf9;
+  border: 1px solid #e1ebe3;
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 20px;
+}
+.benchmark-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.benchmark-meter {
+  position: relative;
+  height: 16px;
+  background: #e2ece4;
+  border-radius: 8px;
+  margin: 22px 0 10px;
+}
+.benchmark-user-pin {
+  position: absolute;
+  top: -24px;
+  transform: translateX(-50%);
+  background: var(--dark);
+  color: #ffffff;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: left 0.4s ease;
+}
+.benchmark-user-pin::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px 4px 0 4px;
+  border-style: solid;
+  border-color: var(--dark) transparent transparent transparent;
+}
+.benchmark-target-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #059669;
+  z-index: 2;
+}
+.benchmark-india-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #d97706;
+  z-index: 2;
+}
+.benchmark-world-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #dc2626;
+  z-index: 2;
+}
+.benchmark-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* Recommendations Grid */
+.recs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+.rec-card {
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  transition: transform 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.rec-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-sm);
+}
+.rec-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.rec-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--mint);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.rec-card h4 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--dark);
+}
+.rec-card p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.rec-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid #edf4ef;
+  padding-top: 10px;
+  font-size: 12px;
+}
+.rec-save {
+  color: var(--primary);
+  font-weight: 800;
+}
+.badge-level {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 11px;
+}
+.level-easy { background: #dcfce7; color: #15803d; }
+.level-med { background: #fef9c3; color: #a16207; }
+
+/* PERSON-WISE COMPARISON STYLES */
+.personas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.person-profile-card {
+  background: #ffffff;
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.person-profile-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.person-profile-card.selected {
+  border-color: var(--primary);
+  background: #fcfefc;
+  box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.15);
+}
+.person-badge-top {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+.person-avatar {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.person-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--dark);
+}
+.person-role {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.person-metrics-mini {
+  background: #f7faf8;
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.person-metrics-mini .num {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--dark);
+}
+.person-metrics-mini .lbl {
+  font-size: 11px;
+  color: var(--muted);
+}
+.person-breakdown-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+.tag-pill {
+  background: #eef5f0;
+  color: #385343;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Comparison Table */
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  margin-top: 16px;
+  background: #fff;
+}
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+.compare-table th {
+  background: #f3f8f5;
+  color: var(--dark);
+  font-weight: 800;
+  padding: 14px 16px;
+  border-bottom: 2px solid var(--line);
+  white-space: nowrap;
+}
+.compare-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #edf4ef;
+  color: #2b3e32;
+  white-space: nowrap;
+}
+.compare-table tr:hover td {
+  background: #f9fcf9;
+}
+.compare-table tr.highlight-row td {
+  background: #f0fdf4;
+  font-weight: 700;
+}
+.val-bold {
+  font-weight: 800;
+  color: var(--dark);
+}
+
+/* Viva & Demo Walkthrough Box */
+.viva-box {
+  background: #ffffff;
+  border: 1px solid #e2ece5;
+  border-radius: 18px;
+  padding: 26px;
+  margin-bottom: 24px;
+}
+.viva-step-card {
+  border-left: 4px solid var(--primary);
+  background: #f8faf8;
+  padding: 16px 20px;
+  border-radius: 0 12px 12px 0;
+  margin-bottom: 16px;
+}
+.viva-step-card h4 {
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--primary-dark);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.viva-step-card p {
+  font-size: 13px;
+  color: #3f5547;
+  line-height: 1.6;
+}
+.viva-step-card code {
+  background: #e6efe8;
+  color: #14532d;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+}
+.qa-card {
+  border: 1px solid #e5ece7;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+.qa-question {
+  background: #f3f8f5;
+  padding: 14px 18px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--dark);
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.qa-question:hover {
+  background: #eaf3ed;
+}
+.qa-answer {
+  padding: 16px 18px;
+  font-size: 13px;
+  color: #385041;
+  line-height: 1.6;
+  background: #ffffff;
+  border-top: 1px solid #eef4f0;
+}
+
+/* What-If Simulator */
+.sim-box {
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+  border: 1px solid #bbf7d0;
+  border-radius: 18px;
+  padding: 24px;
+}
+.sim-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: center;
+}
+.sim-result-card {
+  background: #ffffff;
+  border: 1px solid #c8e8d3;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.sim-diff-number {
+  font-size: 38px;
+  font-weight: 900;
+  color: var(--primary);
+  margin: 10px 0 4px;
+}
+
+/* Modal Popup */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 41, 30, 0.6);
+  z-index: 100;
+  place-items: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open {
+  display: grid;
+}
+.modal-window {
+  background: #ffffff;
+  border-radius: 20px;
+  max-width: 580px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  animation: modalIn 0.25s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #edf4ef;
+  padding-bottom: 12px;
+}
+.modal-header h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--dark);
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 40px 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  background: #ffffff;
+}
+
+/* Print Styling */
+@media print {
+  header, .hero, .nav-tabs, .persona-pills-bar, .actions-bar, .btn, .qa-question i {
+    display: none !important;
+  }
+  body, .container {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  .card, .viva-box {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+  }
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .hero-inner, .layout-2col, .sim-grid {
+    grid-template-columns: 1fr;
+  }
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .kpi-grid, .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nav-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Navigation Header -->
+<header>
+  <div class="nav">
+    <a href="#" class="brand" onclick="switchTab('calculator'); return false;">
+      <span class="brand-icon">🌱</span>
+      <div>
+        <span>Carbon Footprint Estimator</span>
+        <div style="font-size: 11px; font-weight: 600; color: var(--muted);">Individual & Persona-Wise Environmental Impact</div>
+      </div>
+    </a>
+    
+    <div class="nav-tabs">
+      <button class="nav-tab-btn active" id="tabBtn-calculator" onclick="switchTab('calculator')">
+        <span>📱 Calculator & Results</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-comparison" onclick="switchTab('comparison')">
+        <span>👥 Person-Wise Analysis</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-simulator" onclick="switchTab('simulator')">
+        <span>🧪 What-If Simulator</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-viva" onclick="switchTab('viva')">
+        <span>🎓 Teacher / Viva Demo</span>
+        <span class="viva-btn-badge">For Ma'am</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="eyebrow">
+        <span>🌍</span> Educational Working Project
+      </div>
+      <h1>Carbon Footprint Estimator</h1>
+      <p>
+        Calculate, breakdown, and compare greenhouse gas emissions ($CO_2e$) across different individual lifestyles and personas. See how transportation, electricity, diet, and consumption directly dictate personal carbon emissions.
+      </p>
+
+      <div style="font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 6px;">
+        ⚡ Instant Quick Personas (Click to test person-wise):
+      </div>
+      <div class="persona-pills-bar" id="personaPills">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Hero Snapshot Card -->
+    <div class="hero-card">
+      <div class="hero-card-header">
+        <span class="hero-tag">Current Profile</span>
+        <div class="hero-active-person" id="heroPersonName">👤 Aarav (College Student)</div>
+      </div>
+      
+      <div class="hero-total-number" id="heroTotalNum">2.3</div>
+      <div class="hero-total-unit">Tonnes $CO_2e$ / year</div>
+
+      <div style="margin-top: 12px;">
+        <span class="eco-grade-badge grade-green" id="heroGradeBadge">
+          <span>🌿</span> Eco-Rating: Low Impact (Sustainable)
+        </span>
+      </div>
+
+      <div class="hero-stats-mini">
+        <div>
+          <span>Monthly Footprint</span>
+          <b id="heroMonthlyStat">191 kg $CO_2e$</b>
+        </div>
+        <div>
+          <span>Primary Contributor</span>
+          <b id="heroTopCategory">Food & Diet (52%)</b>
+        </div>
+      </div>
+      <div style="margin-top: 14px; display: flex; gap: 8px;">
+        <button class="btn btn-sm" onclick="switchTab('calculator')">Edit Values ↘</button>
+        <button class="btn btn-sm secondary" onclick="switchTab('comparison')">Compare People 👥</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main Container -->
+<main class="container">
+
+  <!-- ======================================================== -->
+  <!-- TAB 1: CALCULATOR & DASHBOARD -->
+  <!-- ======================================================== -->
+  <div id="tab-calculator" class="tab-content active">
+    
+    <div class="section-head">
+      <div>
+        <h2>Individual Footprint Calculator</h2>
+        <p>Adjust monthly activity data for <b id="activeProfileLabel">Aarav (College Student)</b>. All emissions recalculate instantly.</p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-sm secondary" onclick="openAddPersonModal()">+ Add New Person Profile</button>
+        <button class="btn btn-sm secondary" onclick="resetCurrentForm()">↺ Reset to Defaults</button>
+      </div>
+    </div>
+
+    <div class="layout-2col">
+      
+      <!-- Left Column: Input Form -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>📝 Activity Inputs</h3>
+            <p>Input real or simulated monthly consumption parameters</p>
+          </div>
+          <span class="hero-tag" id="currentProfileTag">Aarav</span>
+        </div>
+
+        <form id="calcForm" onsubmit="return false;">
+          
+          <!-- Category 1: Transportation -->
+          <div class="form-section-title">
+            <span>🚗</span> 1. Transportation & Travel
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="inputCar">Car Travel <span class="val-display" id="dispCar">0 km</span></label>
+              <input type="range" class="form-range" id="inputCar" min="0" max="2000" step="10" value="0" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numCar" min="0" max="5000" value="0" oninput="syncRange('inputCar', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Private car (Factor: 0.18 kg $CO_2e$/km)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="inputBike">Motorcycle / Scooter <span class="val-display" id="dispBike">40 km</span></label>
+              <input type="range" class="form-range" id="inputBike" min="0" max="1500" step="10" value="40" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numBike" min="0" max="3000" value="40" oninput="syncRange('inputBike', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Two-wheeler (Factor: 0.07 kg $CO_2e$/km)</small>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="inputPublic">Bus, Metro & Train <span class="val-display" id="dispPublic">180 km</span></label>
+              <input type="range" class="form-range" id="inputPublic" min="0" max="2000" step="10" value="180" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numPublic" min="0" max="5000" value="180" oninput="syncRange('inputPublic', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Public transport (Factor: 0.04 kg $CO_2e$/km)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="inputFlight">Flight Hours (Annual) <span class="val-display" id="dispFlight">0 hrs</span></label>
+              <input type="range" class="form-range" id="inputFlight" min="0" max="80" step="1" value="0" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numFlight" min="0" max="200" value="0" oninput="syncRange('inputFlight', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Domestic / Intl flights (Factor: 90 kg $CO_2e$/hr)</small>
+            </div>
+          </div>
+
+          <!-- Category 2: Electricity & Energy -->
+          <div class="form-section-title">
+            <span>⚡</span> 2. Household & Energy
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="inputElec">Electricity Consumption <span class="val-display" id="dispElec">40 kWh</span></label>
+              <input type="range" class="form-range" id="inputElec" min="0" max="1000" step="10" value="40" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numElec" min="0" max="2000" value="40" oninput="syncRange('inputElec', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Monthly kWh (Grid factor: 0.70 kg $CO_2e$/kWh)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="inputLpg">LPG Cylinder Usage <span class="val-display" id="dispLpg">0 cyl</span></label>
+              <input type="range" class="form-range" id="inputLpg" min="0" max="4" step="0.1" value="0" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numLpg" min="0" max="10" step="0.1" value="0" oninput="syncRange('inputLpg', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Cylinders/mo per person share (Factor: 42.5 kg/cyl)</small>
+            </div>
+          </div>
+
+          <!-- Category 3: Diet & Food -->
+          <div class="form-section-title">
+            <span>🥗</span> 3. Diet & Nutrition Type
+          </div>
+          <div class="form-group">
+            <label for="selectDiet">Select Primary Diet Habit</label>
+            <select class="form-control" id="selectDiet" onchange="updateCalculation()">
+              <option value="100">Vegan / Strict Plant-Based (~100 kg CO₂e / month)</option>
+              <option value="140" selected>Vegetarian (Dairy, pulses, grains) (~140 kg CO₂e / month)</option>
+              <option value="180">Mixed Diet (Occasional chicken, eggs, fish) (~180 kg CO₂e / month)</option>
+              <option value="250">Meat-Heavy Diet (Frequent red meat & poultry) (~250 kg CO₂e / month)</option>
+            </select>
+            <small class="form-hint">Food production, processing, transport, and methane footprint</small>
+          </div>
+
+          <!-- Category 4: Waste & Consumption -->
+          <div class="form-section-title">
+            <span>🛍️</span> 4. Goods, Packaging & Waste
+          </div>
+          <div class="form-group">
+            <label for="selectWaste">Shopping & Waste Level</label>
+            <select class="form-control" id="selectWaste" onchange="updateCalculation()">
+              <option value="20" selected>Low Waste & Minimalist (~20 kg CO₂e / month)</option>
+              <option value="45">Moderate / Typical Urban Household (~45 kg CO₂e / month)</option>
+              <option value="85">High Consumption & Frequent Online Packaging (~85 kg CO₂e / month)</option>
+            </select>
+            <small class="form-hint">Includes consumer goods, packaging materials, and municipal landfill disposal</small>
+          </div>
+
+          <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn" type="button" onclick="saveCurrentProfileEdits()">💾 Save Changes to Profile</button>
+            <button class="btn secondary" type="button" onclick="openAddPersonModal()">👥 Clone to New Person</button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Right Column: Results Dashboard -->
+      <div>
+        
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card highlight">
+            <div class="kpi-label">Annual Footprint</div>
+            <div class="kpi-value" id="kpiAnnual">2.3 <span style="font-size: 14px; font-weight: 600;">t</span></div>
+            <div class="kpi-sub">tonnes $CO_2e$ / year</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Monthly Footprint</div>
+            <div class="kpi-value" id="kpiMonthly">191 <span style="font-size: 14px; font-weight: 600;">kg</span></div>
+            <div class="kpi-sub">kg $CO_2e$ / month</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Daily Average</div>
+            <div class="kpi-value" id="kpiDaily">6.4 <span style="font-size: 14px; font-weight: 600;">kg</span></div>
+            <div class="kpi-sub">kg $CO_2e$ / day</div>
+          </div>
+        </div>
+
+        <!-- Donut Chart & Category Breakdown Card -->
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-header">
+            <div>
+              <h3>📊 Category Breakdown</h3>
+              <p>Contribution of each lifestyle activity</p>
+            </div>
+            <span class="badge-level level-easy" id="offsetTreesBadge">🌳 ~46 Trees to Offset</span>
+          </div>
+
+          <!-- SVG Donut Chart -->
+          <div class="chart-container">
+            <div class="donut-box">
+              <svg class="donut-svg" viewBox="0 0 100 100">
+                <circle class="donut-circle-bg" cx="50" cy="50" r="37"></circle>
+                <circle id="donutSegmentTransport" cx="50" cy="50" r="37" fill="none" stroke="var(--transport)" stroke-width="26" stroke-dasharray="0 232.5" stroke-dashoffset="0"></circle>
+                <circle id="donutSegmentElec" cx="50" cy="50" r="37" fill="none" stroke="var(--electricity)" stroke-width="26" stroke-dasharray="0 232.5" stroke-dashoffset="0"></circle>
+                <circle id="donutSegmentFood" cx="50" cy="50" r="37" fill="none" stroke="var(--food)" stroke-width="26" stroke-dasharray="0 232.5" stroke-dashoffset="0"></circle>
+                <circle id="donutSegmentWaste" cx="50" cy="50" r="37" fill="none" stroke="var(--waste)" stroke-width="26" stroke-dasharray="0 232.5" stroke-dashoffset="0"></circle>
+              </svg>
+              <div class="donut-center-info">
+                <strong id="donutCenterVal">191</strong>
+                <span>kg $CO_2e$/mo</span>
+              </div>
+            </div>
+
+            <!-- Legend List -->
+            <div class="legend-list">
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background: var(--transport);"></div>
+                  <span>Transport & Flights</span>
+                </div>
+                <div class="legend-right">
+                  <b id="legendValTransport">10.0 kg</b>
+                  <span class="legend-pct" id="legendPctTransport">5%</span>
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background: var(--electricity);"></div>
+                  <span>Electricity & Gas</span>
+                </div>
+                <div class="legend-right">
+                  <b id="legendValElec">28.0 kg</b>
+                  <span class="legend-pct" id="legendPctElec">15%</span>
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background: var(--food);"></div>
+                  <span>Diet & Food</span>
+                </div>
+                <div class="legend-right">
+                  <b id="legendValFood">140.0 kg</b>
+                  <span class="legend-pct" id="legendPctFood">73%</span>
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background: var(--waste);"></div>
+                  <span>Waste & Goods</span>
+                </div>
+                <div class="legend-right">
+                  <b id="legendValWaste">20.0 kg</b>
+                  <span class="legend-pct" id="legendPctWaste">7%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Bars -->
+          <div class="category-bars" id="categoryBarsContainer">
+            <!-- Dynamic Category Bars -->
+          </div>
+
+          <!-- Benchmark Meter -->
+          <div class="benchmark-block">
+            <div class="benchmark-title">
+              <span>🎯</span> How does this person compare to Global & National averages?
+            </div>
+            <div class="benchmark-meter">
+              <div class="benchmark-user-pin" id="benchmarkUserPin" style="left: 23%;">
+                You: 2.3 t
+              </div>
+              <div class="benchmark-target-line" style="left: 20%;" title="Paris Climate Target (2.0 t)"></div>
+              <div class="benchmark-india-line" style="left: 19%;" title="India Average (1.9 t)"></div>
+              <div class="benchmark-world-line" style="left: 47%;" title="World Average (4.7 t)"></div>
+            </div>
+            <div class="benchmark-labels">
+              <span>0 t</span>
+              <span style="color: #059669;">🌱 Target: 2.0 t</span>
+              <span style="color: #d97706;">🇮🇳 India: 1.9 t</span>
+              <span style="color: #dc2626;">🌐 World: 4.7 t</span>
+              <span>10 t+</span>
+            </div>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 10px;" id="benchmarkExplainText">
+              <!-- Dynamically populated comparison statement -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Action / Recommendations Preview -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>💡 Tailored Reduction Recommendations</h3>
+              <p>Top actionable measures to reduce this person's footprint</p>
+            </div>
+            <button class="btn btn-sm secondary" onclick="window.print()">🖨️ Print / Save Report</button>
+          </div>
+          <div class="recs-grid" id="recsContainer">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- TAB 2: PERSON-WISE ANALYSIS & COMPARISON -->
+  <!-- ======================================================== -->
+  <div id="tab-comparison" class="tab-content">
+    
+    <div class="section-head">
+      <div>
+        <h2>👥 Person-Wise Comparative Analysis</h2>
+        <p>Demonstrate how carbon footprints drastically vary across diverse lifestyles, professions, and daily habits.</p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-sm" onclick="openAddPersonModal()">+ Add New Person Profile</button>
+        <button class="btn btn-sm secondary" onclick="loadSamplePersonas()">↺ Reset Default Personas</button>
+      </div>
+    </div>
+
+    <!-- Persona Cards Grid -->
+    <div class="personas-grid" id="personasCardsGrid">
+      <!-- Generated via JS -->
+    </div>
+
+    <!-- Comparative Table -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <div>
+          <h3>📊 Side-by-Side Person Breakdown Table</h3>
+          <p>Direct category-by-category numerical comparison across all profiles</p>
+        </div>
+        <span class="hero-tag">College Demo Table</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="compare-table" id="comparisonTable">
+          <thead>
+            <tr>
+              <th>Person Name & Persona</th>
+              <th>Transport (kg/mo)</th>
+              <th>Electricity & Gas (kg/mo)</th>
+              <th>Diet & Food (kg/mo)</th>
+              <th>Waste & Goods (kg/mo)</th>
+              <th>Monthly Total</th>
+              <th>Annual Total</th>
+              <th>Trees Needed</th>
+              <th>Eco Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="comparisonTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Key Insights & Professor Summary -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>🔍 Key Analytical Observations (For Viva Presentation)</h3>
+          <p>Scientific deductions you can explain to your teacher</p>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+        <div style="background: #f8faf8; border-radius: 12px; padding: 16px; border-left: 4px solid var(--primary);">
+          <b style="color: var(--primary-dark); display: block; margin-bottom: 4px;">🚗 Impact of Solo Car Travel:</b>
+          <span style="font-size: 13px; color: var(--muted);">
+            Comparing Vikram (Corporate Exec) with Sneha (Metro Commuter) shows that daily solo car driving is the single biggest driver of high individual carbon footprints in urban areas.
+          </span>
+        </div>
+        <div style="background: #f8faf8; border-radius: 12px; padding: 16px; border-left: 4px solid #eab308;">
+          <b style="color: #854d0e; display: block; margin-bottom: 4px;">⚡ Electricity & AC Grid Factor:</b>
+          <span style="font-size: 13px; color: var(--muted);">
+            High thermal grid emission factors (0.70 kg $CO_2e$/kWh in India) make prolonged air-conditioner usage another heavy contributor to personal emissions.
+          </span>
+        </div>
+        <div style="background: #f8faf8; border-radius: 12px; padding: 16px; border-left: 4px solid #10b981;">
+          <b style="color: #065f46; display: block; margin-bottom: 4px;">🥗 The Plant-Based Advantage:</b>
+          <span style="font-size: 13px; color: var(--muted);">
+            Switching from a meat-heavy diet (250 kg/mo) to vegetarian (140 kg/mo) or plant-based (100 kg/mo) creates an instant reduction of 1.3 to 1.8 tonnes of $CO_2e$ per person annually.
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- TAB 3: WHAT-IF SCENARIO SIMULATOR -->
+  <!-- ======================================================== -->
+  <div id="tab-simulator" class="tab-content">
+    
+    <div class="section-head">
+      <div>
+        <h2>🧪 "What-If" Habit Reduction Simulator</h2>
+        <p>Show your teacher how targeted lifestyle modifications drastically shrink personal emissions.</p>
+      </div>
+      <div>
+        <span class="hero-tag">Interactive Policy & Habit Testing</span>
+      </div>
+    </div>
+
+    <div class="sim-box">
+      <div class="sim-grid">
+        
+        <div>
+          <h3 style="font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 6px;">
+            Simulate Changes for: <span id="simPersonName" style="color: var(--primary);">Vikram (Corporate Executive)</span>
+          </h3>
+          <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">
+            Adjust the habit change levers below to see real-time emission savings and offset equivalents.
+          </p>
+
+          <div class="form-group">
+            <label for="simShiftMetro">
+              <span>🚆 Switch Car Travel to Metro / Public Transit:</span>
+              <span class="val-display" id="simValMetro">50% Shift</span>
+            </label>
+            <input type="range" class="form-range" id="simShiftMetro" min="0" max="100" step="5" value="50" oninput="runSimulation()">
+            <small class="form-hint">Replaces high-emission car distance with low-emission electric metro</small>
+          </div>
+
+          <div class="form-group">
+            <label for="simCutElec">
+              <span>💡 Electricity Conservation (AC temp 26°C + LED):</span>
+              <span class="val-display" id="simValElec">25% Reduction</span>
+            </label>
+            <input type="range" class="form-range" id="simCutElec" min="0" max="60" step="5" value="25" oninput="runSimulation()">
+            <small class="form-hint">Turning up AC thermostat and unplugging phantom loads saves electricity</small>
+          </div>
+
+          <div class="form-group">
+            <label for="simDietShift">
+              <span>🥗 Dietary Shift:</span>
+              <span class="val-display" id="simValDiet">Shift to Vegetarian</span>
+            </label>
+            <select class="form-control" id="simDietShift" onchange="runSimulation()">
+              <option value="keep">Keep Current Diet</option>
+              <option value="vegetarian" selected>Adopt Vegetarian Diet (-110 kg/mo)</option>
+              <option value="vegan">Adopt Plant-Based / Vegan Diet (-150 kg/mo)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="simWasteReduction">
+              <span>♻️ Waste & Plastic Reduction:</span>
+              <span class="val-display" id="simValWaste">Zero Single-Use Plastic</span>
+            </label>
+            <select class="form-control" id="simWasteReduction" onchange="runSimulation()">
+              <option value="0">Current Waste Level</option>
+              <option value="25" selected>Active Recycling & Composting (25% cut)</option>
+              <option value="50">Strict Zero-Waste Lifestyle (50% cut)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Simulation Result Card -->
+        <div class="sim-result-card">
+          <span class="hero-tag" style="background: #dcfce7; color: #166534;">🎉 Projected Environmental Impact</span>
+          
+          <div class="sim-diff-number" id="simSavedKg">
+            -2,740 kg
+          </div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--muted); margin-bottom: 14px;">
+            $CO_2e$ Saved Every Year!
+          </div>
+
+          <div style="background: #f7faf8; border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: left; font-size: 13px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>Baseline Footprint:</span>
+              <b id="simBaselineVal">8.8 tonnes / yr</b>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--primary);">
+              <span>New Projected Footprint:</span>
+              <b id="simNewVal">6.1 tonnes / yr</b>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: 800; border-top: 1px solid #e2ece5; padding-top: 6px;">
+              <span>Total Reduction:</span>
+              <span id="simPctVal" style="color: var(--primary);">-31.1%</span>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 700; color: #166534;">
+            <span>🌳 Equivalent to planting <b>55 mature trees</b></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- TAB 4: TEACHER & VIVA DEMO GUIDE (FOR MA'AM) -->
+  <!-- ======================================================== -->
+  <div id="tab-viva" class="tab-content">
+    
+    <div class="section-head">
+      <div>
+        <h2>🎓 Teacher & Viva Presentation Walkthrough</h2>
+        <p>Comprehensive project documentation, mathematical formulations, and anticipated viva questions to impress your teacher/evaluator.</p>
+      </div>
+      <div>
+        <button class="btn btn-sm" onclick="window.print()">🖨️ Print Project Documentation</button>
+      </div>
+    </div>
+
+    <!-- Step-by-Step Viva Demonstration Script -->
+    <div class="viva-box">
+      <h3 style="font-size: 19px; font-weight: 800; color: var(--dark); margin-bottom: 8px;">
+        🗣️ How to Present This Application to Your Teacher (Demonstration Script)
+      </h3>
+      <p style="font-size: 13px; color: var(--muted); margin-bottom: 18px;">
+        Follow this 4-step sequence when your ma'am asks: <i>"Show me how your project works person-wise and explain the calculations."</i>
+      </p>
+
+      <div class="viva-step-card">
+        <h4>Step 1: Introduction of the Problem & Architecture</h4>
+        <p>
+          <i>"Good morning/afternoon Ma'am. Our project is titled <b>'Carbon Footprint Estimator'</b>. The goal of this application is to quantify personal greenhouse gas emissions ($CO_2e$) across 4 critical lifestyle sectors: <b>Transportation, Electricity & Energy, Diet, and Waste</b>. It enables us to model different personas—such as a student, a daily metro commuter, or a car-driving professional—to observe how lifestyle choices directly influence our ecological footprint."</i>
+        </p>
+      </div>
+
+      <div class="viva-step-card">
+        <h4>Step 2: Demonstrate Person-Wise Variation (The Core Requirement)</h4>
+        <p>
+          <i>"Ma'am, to show how it functions person-wise, we have built-in comparative profiles:
+          <br>1. <b>Aarav (Student)</b>: Travels by bus and metro, consumes ~40 kWh electricity, eats vegetarian meals. His footprint is only <b>~2.3 tonnes/year</b>.
+          <br>2. <b>Vikram (Corporate Manager)</b>: Drives a private car 700 km/month, runs high AC electricity (320 kWh), and has a meat-heavy diet. His footprint jumps to <b>~8.8 tonnes/year</b>—almost 4 times higher!
+          <br>We can also add any new person on the spot by clicking '+ Add New Person Profile'."</i>
+        </p>
+      </div>
+
+      <div class="viva-step-card">
+        <h4>Step 3: Explain the Mathematical Formulas & Emission Factors</h4>
+        <p>
+          <i>"The mathematical core uses standard IPCC and Central Electricity Authority (CEA) emission factors:
+          <br>• <b>Car:</b> <code>Distance (km) × 0.18 kg CO₂e/km</code>
+          <br>• <b>Two-Wheeler:</b> <code>Distance (km) × 0.07 kg CO₂e/km</code>
+          <br>• <b>Public Transit:</b> <code>Distance (km) × 0.04 kg CO₂e/km</code>
+          <br>• <b>Grid Electricity:</b> <code>Energy (kWh) × 0.70 kg CO₂e/kWh</code>
+          <br>• <b>LPG:</b> <code>Cylinders × 42.5 kg CO₂e/cylinder</code>
+          <br>• <b>Diet & Waste:</b> Lifecycle assessment coefficients based on standard dietary studies.
+          <br>The sum is normalized into <b>Monthly kg $CO_2e$</b> and multiplied by 12 for <b>Annual Tonnes $CO_2e$</b>."</i>
+        </p>
+      </div>
+
+      <div class="viva-step-card">
+        <h4>Step 4: Show the 'What-If' Simulation & Action Plan</h4>
+        <p>
+          <i>"Finally Ma'am, an estimator is only useful if it helps people improve. In our <b>'What-If Simulator'</b>, if Vikram replaces just 50% of his car trips with the metro, his emissions reduce by over 1,500 kg $CO_2e$ annually. This proves how actionable individual data is."</i>
+        </p>
+      </div>
+    </div>
+
+    <!-- Mathematical Reference Table -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <div>
+          <h3>📐 Scientific Emission Factors Table</h3>
+          <p>Standard empirical values utilized in the calculation engine</p>
+        </div>
+        <span class="hero-tag">Formula Reference</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="compare-table">
+          <thead>
+            <tr>
+              <th>Emission Category</th>
+              <th>Activity Parameter</th>
+              <th>Emission Factor</th>
+              <th>Units</th>
+              <th>Standard Source Reference</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Private Car</b></td>
+              <td>Distance Travelled</td>
+              <td>0.18</td>
+              <td>kg $CO_2e$ / km</td>
+              <td>IPCC Mobile Combustion Guidelines (Petrol/Diesel avg)</td>
+            </tr>
+            <tr>
+              <td><b>Two-Wheeler (Bike/Scooter)</b></td>
+              <td>Distance Travelled</td>
+              <td>0.07</td>
+              <td>kg $CO_2e$ / km</td>
+              <td>Automotive Research Association / MoRTH</td>
+            </tr>
+            <tr>
+              <td><b>Public Transit (Metro/Bus)</b></td>
+              <td>Distance Travelled</td>
+              <td>0.04</td>
+              <td>kg $CO_2e$ / passenger-km</td>
+              <td>Central Road Research Institute (CRRI) / Transit avg</td>
+            </tr>
+            <tr>
+              <td><b>Aviation (Flights)</b></td>
+              <td>Flight Duration</td>
+              <td>90.0</td>
+              <td>kg $CO_2e$ / flight hour</td>
+              <td>ICAO Carbon Emissions Calculator Methodology</td>
+            </tr>
+            <tr>
+              <td><b>Grid Electricity</b></td>
+              <td>Household Energy Meter</td>
+              <td>0.70</td>
+              <td>kg $CO_2e$ / kWh</td>
+              <td>Central Electricity Authority (CEA) CO₂ Baseline Database</td>
+            </tr>
+            <tr>
+              <td><b>Cooking Fuel (LPG)</b></td>
+              <td>14.2 kg Domestic Cylinder</td>
+              <td>42.5</td>
+              <td>kg $CO_2e$ / cylinder</td>
+              <td>Petroleum Conservation Research Association (PCRA)</td>
+            </tr>
+            <tr>
+              <td><b>Diet: Vegan / Plant</b></td>
+              <td>Monthly Food Intake</td>
+              <td>100.0</td>
+              <td>kg $CO_2e$ / month</td>
+              <td>Poore & Nemecek (Oxford Science Study, 2018)</td>
+            </tr>
+            <tr>
+              <td><b>Diet: Meat-Heavy</b></td>
+              <td>Monthly Food Intake</td>
+              <td>250.0</td>
+              <td>kg $CO_2e$ / month</td>
+              <td>Lifecycle Assessment of Ruminant Livestock</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Top Viva Questions & Answers -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>❓ Top 6 Viva / Exam Questions & Model Answers</h3>
+          <p>Read through these to be 100% prepared for questions your teacher might ask</p>
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span>Q1: What does "$CO_2e$" mean and why don't we just measure $CO_2$?</span>
+          <span>▼</span>
+        </div>
+        <div class="qa-answer">
+          <b>Answer:</b> $CO_2e$ stands for <b>Carbon Dioxide Equivalent</b>. Human activities emit multiple greenhouse gases including Methane ($CH_4$), Nitrous Oxide ($N_2O$), and Fluorinated gases, which have vastly higher Global Warming Potentials (GWPs) than carbon dioxide. For example, Methane has a GWP of ~28 over 100 years. Expressing everything in "$CO_2e$" normalizes all gases to an equivalent warming impact of 1 unit of $CO_2$, enabling a single consolidated metric.
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span>Q2: Why does diet impact carbon footprint so significantly?</span>
+          <span>▼</span>
+        </div>
+        <div class="qa-answer">
+          <b>Answer:</b> Food production accounts for over 25% of global GHG emissions. Livestock, particularly cattle and sheep, produce substantial enteric fermentation (methane gas). Additionally, animal feed production requires immense land clearing, fertilizers ($N_2O$ emissions), and refrigeration energy. Therefore, plant-based diets inherently produce far less GHG per calorie than meat-centric diets.
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span>Q3: How is this application structured and how is user state managed?</span>
+          <span>▼</span>
+        </div>
+        <div class="qa-answer">
+          <b>Answer:</b> The application follows a reactive frontend architecture. The state contains an array of person profiles, each with activity attributes. When any input or slider changes, the mathematical calculation engine recalculates sector totals, updates the SVG donut chart and DOM metrics, and saves the active profile in browser <code>localStorage</code> for persistent retrieval without needing an external database setup.
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span>Q4: How does the application calculate tree offset requirements?</span>
+          <span>▼</span>
+        </div>
+        <div class="qa-answer">
+          <b>Answer:</b> An average mature tropical tree absorbs approximately <b>20 to 22 kg of $CO_2$ per year</b>. Therefore, to neutralize 1 tonne (1,000 kg) of annual $CO_2e$, approximately $1000 / 22 \approx 45\text{ to }50\text{ trees}$ need to be planted and nurtured for a full year.
+        </div>
+      </div>
+
+      <div class="qa-card">
+        <div class="qa-question" onclick="toggleQA(this)">
+          <span>Q5: What are the limitations of this model and future scopes?</span>
+          <span>▼</span>
+        </div>
+        <div class="qa-answer">
+          <b>Answer:</b> The current model uses simplified average emission factors. Future scope includes integrating real-time smart meter APIs, GPS-based transit tracking, regional emission factor databases based on user geolocation (e.g. state-specific electrical grid mixes), and cloud-synced multi-user organizational footprints.
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</main>
+
+<!-- Modal: Add New Person Profile -->
+<div class="modal-overlay" id="addPersonModal">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3>👥 Add New Person Profile</h3>
+      <button class="modal-close" onclick="closeAddPersonModal()">×</button>
+    </div>
+    
+    <form id="newPersonForm" onsubmit="handleCreatePerson(event)">
+      <div class="form-group">
+        <label for="newPersonName">Person Name / Role</label>
+        <input type="text" class="form-control" id="newPersonName" placeholder="e.g. Ma'am, Priya, Rohan, Dad" required>
+      </div>
+
+      <div class="form-group">
+        <label for="newPersonTemplate">Load from Preset Archetype</label>
+        <select class="form-control" id="newPersonTemplate" onchange="populateTemplateValues(this.value)">
+          <option value="custom">Custom Values</option>
+          <option value="student">College Student (Eco-conscious)</option>
+          <option value="commuter">Daily Metro Commuter</option>
+          <option value="executive">Corporate Executive (Car User)</option>
+          <option value="family">Suburban Family Member</option>
+        </select>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Car Travel (km/mo)</label>
+          <input type="number" class="form-control" id="mCar" value="100" min="0">
+        </div>
+        <div class="form-group">
+          <label>Bike (km/mo)</label>
+          <input type="number" class="form-control" id="mBike" value="50" min="0">
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Public Transit (km/mo)</label>
+          <input type="number" class="form-control" id="mPublic" value="150" min="0">
+        </div>
+        <div class="form-group">
+          <label>Electricity (kWh/mo)</label>
+          <input type="number" class="form-control" id="mElec" value="90" min="0">
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Diet Type</label>
+          <select class="form-control" id="mDiet">
+            <option value="100">Vegan (100 kg)</option>
+            <option value="140" selected>Vegetarian (140 kg)</option>
+            <option value="180">Mixed (180 kg)</option>
+            <option value="250">Meat-Heavy (250 kg)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Waste Level</label>
+          <select class="form-control" id="mWaste">
+            <option value="20">Low (20 kg)</option>
+            <option value="45" selected>Moderate (45 kg)</option>
+            <option value="85">High (85 kg)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn secondary" onclick="closeAddPersonModal()">Cancel</button>
+        <button type="submit" class="btn">Create & Compare Person</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div style="max-width: 900px; margin: 0 auto;">
+    <div style="font-weight: 800; font-size: 16px; color: var(--dark); margin-bottom: 6px;">
+      🌱 Carbon Footprint Estimator
+    </div>
+    <p style="margin-bottom: 12px;">
+      Academic Project Demonstration for Environmental Impact Assessment & Individual Lifestyle Carbon Auditing.
+    </p>
+    <div style="font-size: 11px; color: #72897c;">
+      Calculations adhere to standard IPCC and CEA greenhouse gas conversion methodologies. Built for pair-programming and presentation showcase.
+    </div>
+  </div>
+</footer>
+
+<!-- Application Logic -->
+<script>
+// ==========================================
+// DATA STORE & DEFAULT PERSONAS
+// ==========================================
+const DEFAULT_PERSONAS = [
+  {
+    id: 'p1',
+    name: 'Aarav',
+    role: 'College Student (Hosteller)',
+    avatar: '🎓',
+    car: 0,
+    bike: 40,
+    public: 180,
+    flight: 0,
+    elec: 40,
+    lpg: 0,
+    diet: 140,
+    waste: 20
+  },
+  {
+    id: 'p2',
+    name: 'Sneha',
+    role: 'Metro Commuter / Junior Dev',
+    avatar: '🚆',
+    car: 50,
+    bike: 60,
+    public: 240,
+    flight: 2,
+    elec: 110,
+    lpg: 0.5,
+    diet: 180,
+    waste: 45
+  },
+  {
+    id: 'p3',
+    name: 'Vikram',
+    role: 'Corporate Executive (Car Commuter)',
+    avatar: '🚗',
+    car: 700,
+    bike: 0,
+    public: 20,
+    flight: 10,
+    elec: 320,
+    lpg: 1.2,
+    diet: 250,
+    waste: 85
+  },
+  {
+    id: 'p4',
+    name: 'Ananya',
+    role: 'Eco-Warrior / Green Champion',
+    avatar: '🌿',
+    car: 0,
+    bike: 20,
+    public: 120,
+    flight: 0,
+    elec: 50,
+    lpg: 0.2,
+    diet: 100,
+    waste: 20
+  }
+];
+
+let personas = [];
+let activePersonId = 'p1';
+
+// Initialise Local Storage or Default
+function initApp() {
+  const saved = localStorage.getItem('eco_carbon_personas');
+  if (saved) {
+    try {
+      personas = JSON.parse(saved);
+    } catch(e) {
+      personas = JSON.parse(JSON.stringify(DEFAULT_PERSONAS));
+    }
+  } else {
+    personas = JSON.parse(JSON.stringify(DEFAULT_PERSONAS));
+    saveToStorage();
+  }
+
+  renderPersonaPills();
+  loadPersonIntoForm(activePersonId);
+  renderComparisonView();
+  runSimulation();
+}
+
+function saveToStorage() {
+  localStorage.setItem('eco_carbon_personas', JSON.stringify(personas));
+}
+
+function loadSamplePersonas() {
+  personas = JSON.parse(JSON.stringify(DEFAULT_PERSONAS));
+  activePersonId = 'p1';
+  saveToStorage();
+  renderPersonaPills();
+  loadPersonIntoForm(activePersonId);
+  renderComparisonView();
+  runSimulation();
+  alert('Default personas reloaded!');
+}
+
+// ==========================================
+// CALCULATOR CORE ENGINE
+// ==========================================
+const FACTORS = {
+  car: 0.18,        // kg CO2e / km
+  bike: 0.07,       // kg CO2e / km
+  public: 0.04,     // kg CO2e / km
+  flight: 90.0,     // kg CO2e / hour (divided by 12 for monthly)
+  elec: 0.70,       // kg CO2e / kWh
+  lpg: 42.5         // kg CO2e / cylinder
+};
+
+function calculatePersonEmissions(p) {
+  const transport = (p.car * FACTORS.car) +
+                    (p.bike * FACTORS.bike) +
+                    (p.public * FACTORS.public) +
+                    ((p.flight * FACTORS.flight) / 12);
+
+  const electricity = (p.elec * FACTORS.elec) +
+                      (p.lpg * FACTORS.lpg);
+
+  const food = Number(p.diet);
+  const waste = Number(p.waste);
+
+  const monthlyTotal = transport + electricity + food + waste;
+  const annualTotalTonnes = (monthlyTotal * 12) / 1000;
+  const dailyKg = monthlyTotal / 30;
+
+  // Trees required: ~22 kg CO2 absorbed per tree per year
+  const treesNeeded = Math.round((annualTotalTonnes * 1000) / 22);
+
+  let grade = 'Low Impact';
+  let gradeClass = 'grade-green';
+  if (annualTotalTonnes > 5.0) {
+    grade = 'High Carbon Footprint';
+    gradeClass = 'grade-red';
+  } else if (annualTotalTonnes > 2.5) {
+    grade = 'Moderate Footprint';
+    gradeClass = 'grade-yellow';
+  }
+
+  return {
+    transport,
+    electricity,
+    food,
+    waste,
+    monthlyTotal,
+    annualTotalTonnes,
+    dailyKg,
+    treesNeeded,
+    grade,
+    gradeClass
+  };
+}
+
+// ==========================================
+// UI SYNCHRONIZATION
+// ==========================================
+function renderPersonaPills() {
+  const container = document.getElementById('personaPills');
+  container.innerHTML = personas.map(p => {
+    const isAct = p.id === activePersonId ? 'active' : '';
+    return `<button class="persona-chip ${isAct}" onclick="selectPersona('${p.id}')">
+      <span>${p.avatar || '👤'}</span>
+      <span>${p.name} (${p.role.split(' ')[0]})</span>
+    </button>`;
+  }).join('');
+}
+
+function selectPersona(id) {
+  activePersonId = id;
+  renderPersonaPills();
+  loadPersonIntoForm(id);
+  renderComparisonView();
+  runSimulation();
+}
+
+function loadPersonIntoForm(id) {
+  const p = personas.find(item => item.id === id) || personas[0];
+  if (!p) return;
+
+  document.getElementById('inputCar').value = p.car;
+  document.getElementById('numCar').value = p.car;
+  document.getElementById('dispCar').textContent = p.car + ' km';
+
+  document.getElementById('inputBike').value = p.bike;
+  document.getElementById('numBike').value = p.bike;
+  document.getElementById('dispBike').textContent = p.bike + ' km';
+
+  document.getElementById('inputPublic').value = p.public;
+  document.getElementById('numPublic').value = p.public;
+  document.getElementById('dispPublic').textContent = p.public + ' km';
+
+  document.getElementById('inputFlight').value = p.flight;
+  document.getElementById('numFlight').value = p.flight;
+  document.getElementById('dispFlight').textContent = p.flight + ' hrs';
+
+  document.getElementById('inputElec').value = p.elec;
+  document.getElementById('numElec').value = p.elec;
+  document.getElementById('dispElec').textContent = p.elec + ' kWh';
+
+  document.getElementById('inputLpg').value = p.lpg;
+  document.getElementById('numLpg').value = p.lpg;
+  document.getElementById('dispLpg').textContent = p.lpg + ' cyl';
+
+  document.getElementById('selectDiet').value = p.diet;
+  document.getElementById('selectWaste').value = p.waste;
+
+  document.getElementById('activeProfileLabel').textContent = `${p.name} (${p.role})`;
+  document.getElementById('currentProfileTag').textContent = p.name;
+  document.getElementById('heroPersonName').textContent = `${p.avatar || '👤'} ${p.name} (${p.role})`;
+  document.getElementById('simPersonName').textContent = `${p.name} (${p.role})`;
+
+  updateCalculation();
+}
+
+function syncRange(rangeId, val) {
+  document.getElementById(rangeId).value = val;
+  updateCalculation();
+}
+
+function updateCalculation() {
+  const car = Math.max(0, parseFloat(document.getElementById('inputCar').value) || 0);
+  const bike = Math.max(0, parseFloat(document.getElementById('inputBike').value) || 0);
+  const pub = Math.max(0, parseFloat(document.getElementById('inputPublic').value) || 0);
+  const flight = Math.max(0, parseFloat(document.getElementById('inputFlight').value) || 0);
+  const elec = Math.max(0, parseFloat(document.getElementById('inputElec').value) || 0);
+  const lpg = Math.max(0, parseFloat(document.getElementById('inputLpg').value) || 0);
+  const diet = parseFloat(document.getElementById('selectDiet').value) || 140;
+  const waste = parseFloat(document.getElementById('selectWaste').value) || 20;
+
+  // Update displays
+  document.getElementById('dispCar').textContent = car + ' km';
+  document.getElementById('numCar').value = car;
+  document.getElementById('dispBike').textContent = bike + ' km';
+  document.getElementById('numBike').value = bike;
+  document.getElementById('dispPublic').textContent = pub + ' km';
+  document.getElementById('numPublic').value = pub;
+  document.getElementById('dispFlight').textContent = flight + ' hrs';
+  document.getElementById('numFlight').value = flight;
+  document.getElementById('dispElec').textContent = elec + ' kWh';
+  document.getElementById('numElec').value = elec;
+  document.getElementById('dispLpg').textContent = lpg + ' cyl';
+  document.getElementById('numLpg').value = lpg;
+
+  const currentObj = { car, bike, public: pub, flight, elec, lpg, diet, waste };
+  const res = calculatePersonEmissions(currentObj);
+
+  // Update KPI Cards
+  document.getElementById('kpiAnnual').innerHTML = `${res.annualTotalTonnes.toFixed(1)} <span style="font-size: 14px; font-weight: 600;">t</span>`;
+  document.getElementById('kpiMonthly').innerHTML = `${Math.round(res.monthlyTotal)} <span style="font-size: 14px; font-weight: 600;">kg</span>`;
+  document.getElementById('kpiDaily').innerHTML = `${res.dailyKg.toFixed(1)} <span style="font-size: 14px; font-weight: 600;">kg</span>`;
+  document.getElementById('heroTotalNum').textContent = res.annualTotalTonnes.toFixed(1);
+  document.getElementById('heroMonthlyStat').textContent = `${Math.round(res.monthlyTotal)} kg CO₂e`;
+  document.getElementById('donutCenterVal').textContent = Math.round(res.monthlyTotal);
+
+  // Offset Badge
+  document.getElementById('offsetTreesBadge').textContent = `🌳 ~${res.treesNeeded} Trees to Offset`;
+
+  // Eco-Grade Badge in Hero
+  const gradeBadge = document.getElementById('heroGradeBadge');
+  gradeBadge.className = `eco-grade-badge ${res.gradeClass}`;
+  gradeBadge.innerHTML = `<span>${res.annualTotalTonnes > 5 ? '⚠️' : (res.annualTotalTonnes > 2.5 ? '🌿' : '🌱')}</span> Eco-Rating: ${res.grade}`;
+
+  // Donut SVG Calculations
+  const circ = 2 * Math.PI * 37; // ~232.47
+  const tot = res.monthlyTotal || 1;
+  const pTrans = res.transport / tot;
+  const pElec = res.electricity / tot;
+  const pFood = res.food / tot;
+  const pWaste = res.waste / tot;
+
+  const lenTrans = pTrans * circ;
+  const lenElec = pElec * circ;
+  const lenFood = pFood * circ;
+  const lenWaste = pWaste * circ;
+
+  const segTrans = document.getElementById('donutSegmentTransport');
+  const segElec = document.getElementById('donutSegmentElec');
+  const segFood = document.getElementById('donutSegmentFood');
+  const segWaste = document.getElementById('donutSegmentWaste');
+
+  segTrans.style.strokeDasharray = `${lenTrans} ${circ}`;
+  segTrans.style.strokeDashoffset = '0';
+
+  segElec.style.strokeDasharray = `${lenElec} ${circ}`;
+  segElec.style.strokeDashoffset = `-${lenTrans}`;
+
+  segFood.style.strokeDasharray = `${lenFood} ${circ}`;
+  segFood.style.strokeDashoffset = `-${lenTrans + lenElec}`;
+
+  segWaste.style.strokeDasharray = `${lenWaste} ${circ}`;
+  segWaste.style.strokeDashoffset = `-${lenTrans + lenElec + lenFood}`;
+
+  // Update Legend Values & Pct
+  document.getElementById('legendValTransport').textContent = `${res.transport.toFixed(1)} kg`;
+  document.getElementById('legendPctTransport').textContent = `${Math.round(pTrans * 100)}%`;
+
+  document.getElementById('legendValElec').textContent = `${res.electricity.toFixed(1)} kg`;
+  document.getElementById('legendPctElec').textContent = `${Math.round(pElec * 100)}%`;
+
+  document.getElementById('legendValFood').textContent = `${res.food.toFixed(1)} kg`;
+  document.getElementById('legendPctFood').textContent = `${Math.round(pFood * 100)}%`;
+
+  document.getElementById('legendValWaste').textContent = `${res.waste.toFixed(1)} kg`;
+  document.getElementById('legendPctWaste').textContent = `${Math.round(pWaste * 100)}%`;
+
+  // Determine top category
+  const cats = [
+    { name: 'Transport & Travel', val: res.transport, pct: pTrans * 100 },
+    { name: 'Electricity & Energy', val: res.electricity, pct: pElec * 100 },
+    { name: 'Diet & Food', val: res.food, pct: pFood * 100 },
+    { name: 'Waste & Goods', val: res.waste, pct: pWaste * 100 }
+  ];
+  cats.sort((a,b) => b.val - a.val);
+  document.getElementById('heroTopCategory').textContent = `${cats[0].name} (${Math.round(cats[0].pct)}%)`;
+
+  // Render Category Bars
+  const barsContainer = document.getElementById('categoryBarsContainer');
+  barsContainer.innerHTML = cats.map(c => `
+    <div>
+      <div class="bar-row-info">
+        <span>${c.name}</span>
+        <b>${c.val.toFixed(1)} kg/mo (${Math.round(c.pct)}%)</b>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width: ${Math.min(100, c.pct)}%; background: ${getCategoryColor(c.name)};"></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Benchmark Pin (Scale: 0 to 10 tonnes = 0% to 100%)
+  const pinPercent = Math.min(95, Math.max(5, (res.annualTotalTonnes / 10) * 100));
+  const userPin = document.getElementById('benchmarkUserPin');
+  userPin.style.left = `${pinPercent}%`;
+  userPin.textContent = `You: ${res.annualTotalTonnes.toFixed(1)} t`;
+
+  // Benchmark statement
+  let compText = '';
+  if (res.annualTotalTonnes <= 1.9) {
+    compText = `🌿 <b>Great!</b> Your footprint is below the Indian National Average (1.9 t) and meets the Paris Climate Agreement target.`;
+  } else if (res.annualTotalTonnes <= 4.7) {
+    compText = `⚠️ Your footprint is above the Indian National Average (1.9 t), but below the World Average (4.7 t). Transportation and energy efficiency can lower it.`;
+  } else {
+    compText = `🚨 <b>High Impact:</b> Your footprint exceeds the Global Average (4.7 t). Substantial reductions in car travel and energy consumption are recommended.`;
+  }
+  document.getElementById('benchmarkExplainText').innerHTML = compText;
+
+  // Recommendations Generation
+  renderRecommendations(cats[0].name, res);
+}
+
+function getCategoryColor(name) {
+  if (name.includes('Transport')) return 'var(--transport)';
+  if (name.includes('Electricity')) return 'var(--electricity)';
+  if (name.includes('Diet')) return 'var(--food)';
+  return 'var(--waste)';
+}
+
+function renderRecommendations(topCat, res) {
+  const container = document.getElementById('recsContainer');
+  const tips = [
+    {
+      cat: 'Transport & Travel',
+      icon: '🚆',
+      title: 'Shift to Public Transit or Metro',
+      desc: 'Replacing solo car trips with the metro or bus for just 3 days a week cuts transport emissions by up to 55%.',
+      save: `${Math.round(res.transport * 0.45)} kg/mo`,
+      badge: 'High Impact',
+      badgeClass: 'level-easy'
+    },
+    {
+      cat: 'Electricity & Energy',
+      icon: '❄️',
+      title: 'Optimize Air Conditioner to 25°C',
+      desc: 'Each degree higher on your AC thermostat saves approximately 6% of electrical power, directly slashing utility bills.',
+      save: `${Math.round(res.electricity * 0.20)} kg/mo`,
+      badge: 'Easy Habit',
+      badgeClass: 'level-easy'
+    },
+    {
+      cat: 'Diet & Food',
+      icon: '🥗',
+      title: 'Incorporate Plant-Rich Meals',
+      desc: 'Substituting one meat meal with lentils, beans, or vegetables drastically curbs upstream methane and land-use footprints.',
+      save: `${Math.round(res.food * 0.25)} kg/mo`,
+      badge: 'Medium Effort',
+      badgeClass: 'level-med'
+    },
+    {
+      cat: 'Waste & Goods',
+      icon: '♻️',
+      title: 'Refuse Single-Use Packaging',
+      desc: 'Carry reusable bags, bottles, and opt for consolidated shipping orders to minimize packaging waste.',
+      save: `${Math.round(res.waste * 0.35)} kg/mo`,
+      badge: 'Quick Win',
+      badgeClass: 'level-easy'
+    }
+  ];
+
+  // Put top category first
+  tips.sort((a,b) => (a.cat === topCat ? -1 : 1));
+
+  container.innerHTML = tips.map(t => `
+    <div class="rec-card">
+      <div>
+        <div class="rec-top">
+          <div class="rec-icon">${t.icon}</div>
+          <h4>${t.title}</h4>
+        </div>
+        <p>${t.desc}</p>
+      </div>
+      <div class="rec-foot">
+        <span class="rec-save">Potential saving: ~${t.save}</span>
+        <span class="badge-level ${t.badgeClass}">${t.badge}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function saveCurrentProfileEdits() {
+  const p = personas.find(item => item.id === activePersonId);
+  if (!p) return;
+
+  p.car = parseFloat(document.getElementById('inputCar').value) || 0;
+  p.bike = parseFloat(document.getElementById('inputBike').value) || 0;
+  p.public = parseFloat(document.getElementById('inputPublic').value) || 0;
+  p.flight = parseFloat(document.getElementById('inputFlight').value) || 0;
+  p.elec = parseFloat(document.getElementById('inputElec').value) || 0;
+  p.lpg = parseFloat(document.getElementById('inputLpg').value) || 0;
+  p.diet = parseFloat(document.getElementById('selectDiet').value) || 140;
+  p.waste = parseFloat(document.getElementById('selectWaste').value) || 20;
+
+  saveToStorage();
+  renderComparisonView();
+  runSimulation();
+  alert(`Saved changes to ${p.name}'s profile!`);
+}
+
+function resetCurrentForm() {
+  loadPersonIntoForm(activePersonId);
+}
+
+// ==========================================
+// PERSON-WISE COMPARISON TAB
+// ==========================================
+function renderComparisonView() {
+  const cardsGrid = document.getElementById('personasCardsGrid');
+  const tbody = document.getElementById('comparisonTableBody');
+
+  // Render Profile Cards
+  cardsGrid.innerHTML = personas.map(p => {
+    const res = calculatePersonEmissions(p);
+    const isSel = p.id === activePersonId ? 'selected' : '';
+    return `
+      <div class="person-profile-card ${isSel}" onclick="selectPersona('${p.id}')">
+        <span class="badge-level ${res.gradeClass} person-badge-top">${res.annualTotalTonnes.toFixed(1)} t/yr</span>
+        <div class="person-avatar">${p.avatar || '👤'}</div>
+        <div class="person-name">${p.name}</div>
+        <div class="person-role">${p.role}</div>
+
+        <div class="person-metrics-mini">
+          <div>
+            <div class="lbl">Monthly Footprint</div>
+            <div class="num">${Math.round(res.monthlyTotal)} kg</div>
+          </div>
+          <div>
+            <div class="lbl">Trees to Offset</div>
+            <div class="num" style="color: var(--primary);">🌳 ${res.treesNeeded}</div>
+          </div>
+        </div>
+
+        <div class="person-breakdown-tags">
+          <span class="tag-pill">🚗 ${Math.round(res.transport)} kg</span>
+          <span class="tag-pill">⚡ ${Math.round(res.electricity)} kg</span>
+          <span class="tag-pill">🥗 ${Math.round(res.food)} kg</span>
+          <span class="tag-pill">🛍️ ${Math.round(res.waste)} kg</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Render Table Rows
+  tbody.innerHTML = personas.map(p => {
+    const res = calculatePersonEmissions(p);
+    const isHighlight = p.id === activePersonId ? 'highlight-row' : '';
+    return `
+      <tr class="${isHighlight}">
+        <td>
+          <div style="font-weight: 800; color: var(--dark);">${p.avatar || '👤'} ${p.name}</div>
+          <div style="font-size: 11px; color: var(--muted);">${p.role}</div>
+        </td>
+        <td>${res.transport.toFixed(1)}</td>
+        <td>${res.electricity.toFixed(1)}</td>
+        <td>${res.food.toFixed(1)}</td>
+        <td>${res.waste.toFixed(1)}</td>
+        <td class="val-bold">${Math.round(res.monthlyTotal)} kg</td>
+        <td class="val-bold" style="color: var(--primary); font-size: 15px;">${res.annualTotalTonnes.toFixed(1)} t</td>
+        <td>🌳 ${res.treesNeeded}</td>
+        <td><span class="badge-level ${res.gradeClass}">${res.grade}</span></td>
+        <td>
+          <button class="btn btn-sm secondary" onclick="event.stopPropagation(); selectPersona('${p.id}'); switchTab('calculator');">Load ↗</button>
+          ${personas.length > 1 ? `<button class="btn btn-sm secondary" style="color: #dc2626;" onclick="event.stopPropagation(); deletePerson('${p.id}')">✕</button>` : ''}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function deletePerson(id) {
+  if (confirm('Are you sure you want to remove this profile?')) {
+    personas = personas.filter(p => p.id !== id);
+    if (activePersonId === id && personas.length > 0) {
+      activePersonId = personas[0].id;
+    }
+    saveToStorage();
+    renderPersonaPills();
+    loadPersonIntoForm(activePersonId);
+    renderComparisonView();
+  }
+}
+
+// ==========================================
+// SIMULATOR LOGIC
+// ==========================================
+function runSimulation() {
+  const p = personas.find(item => item.id === activePersonId) || personas[0];
+  if (!p) return;
+
+  const baseline = calculatePersonEmissions(p);
+
+  // Levers
+  const shiftMetroPct = parseFloat(document.getElementById('simShiftMetro').value) || 0;
+  document.getElementById('simValMetro').textContent = `${shiftMetroPct}% Shift`;
+
+  const cutElecPct = parseFloat(document.getElementById('simCutElec').value) || 0;
+  document.getElementById('simValElec').textContent = `${cutElecPct}% Cut`;
+
+  const dietChoice = document.getElementById('simDietShift').value;
+  const wasteChoice = parseFloat(document.getElementById('simWasteReduction').value) || 0;
+
+  // Calculate new simulated profile
+  let simCar = p.car * (1 - (shiftMetroPct / 100));
+  let simPub = p.public + (p.car * (shiftMetroPct / 100)); // shift km to metro
+  let simElec = p.elec * (1 - (cutElecPct / 100));
+  let simDiet = p.diet;
+  if (dietChoice === 'vegetarian') simDiet = 140;
+  else if (dietChoice === 'vegan') simDiet = 100;
+
+  let simWaste = p.waste * (1 - (wasteChoice / 100));
+
+  const simObj = {
+    car: simCar,
+    bike: p.bike,
+    public: simPub,
+    flight: p.flight,
+    elec: simElec,
+    lpg: p.lpg,
+    diet: simDiet,
+    waste: simWaste
+  };
+
+  const simRes = calculatePersonEmissions(simObj);
+
+  const baselineAnnualKg = baseline.annualTotalTonnes * 1000;
+  const simAnnualKg = simRes.annualTotalTonnes * 1000;
+  const savedKg = Math.max(0, baselineAnnualKg - simAnnualKg);
+  const pctCut = baselineAnnualKg > 0 ? (savedKg / baselineAnnualKg) * 100 : 0;
+  const treesSaved = Math.round(savedKg / 22);
+
+  document.getElementById('simSavedKg').textContent = `-${Math.round(savedKg).toLocaleString()} kg`;
+  document.getElementById('simBaselineVal').textContent = `${baseline.annualTotalTonnes.toFixed(1)} tonnes / yr`;
+  document.getElementById('simNewVal').textContent = `${simRes.annualTotalTonnes.toFixed(1)} tonnes / yr`;
+  document.getElementById('simPctVal').textContent = `-${pctCut.toFixed(1)}%`;
+}
+
+// ==========================================
+// MODAL: ADD NEW PERSON
+// ==========================================
+function openAddPersonModal() {
+  document.getElementById('addPersonModal').classList.add('open');
+}
+
+function closeAddPersonModal() {
+  document.getElementById('addPersonModal').classList.remove('open');
+}
+
+function populateTemplateValues(template) {
+  if (template === 'student') {
+    document.getElementById('mCar').value = 0;
+    document.getElementById('mBike').value = 30;
+    document.getElementById('mPublic').value = 150;
+    document.getElementById('mElec').value = 45;
+    document.getElementById('mDiet').value = 140;
+    document.getElementById('mWaste').value = 20;
+  } else if (template === 'commuter') {
+    document.getElementById('mCar').value = 80;
+    document.getElementById('mBike').value = 50;
+    document.getElementById('mPublic').value = 220;
+    document.getElementById('mElec').value = 120;
+    document.getElementById('mDiet').value = 180;
+    document.getElementById('mWaste').value = 45;
+  } else if (template === 'executive') {
+    document.getElementById('mCar').value = 650;
+    document.getElementById('mBike').value = 0;
+    document.getElementById('mPublic').value = 30;
+    document.getElementById('mElec').value = 300;
+    document.getElementById('mDiet').value = 250;
+    document.getElementById('mWaste').value = 85;
+  } else if (template === 'family') {
+    document.getElementById('mCar').value = 300;
+    document.getElementById('mBike').value = 100;
+    document.getElementById('mPublic').value = 100;
+    document.getElementById('mElec').value = 180;
+    document.getElementById('mDiet').value = 180;
+    document.getElementById('mWaste').value = 45;
+  }
+}
+
+function handleCreatePerson(e) {
+  e.preventDefault();
+  const name = document.getElementById('newPersonName').value.trim();
+  if (!name) return;
+
+  const newId = 'p_' + Date.now();
+  const newProfile = {
+    id: newId,
+    name: name,
+    role: 'Custom Person Profile',
+    avatar: '👤',
+    car: parseFloat(document.getElementById('mCar').value) || 0,
+    bike: parseFloat(document.getElementById('mBike').value) || 0,
+    public: parseFloat(document.getElementById('mPublic').value) || 0,
+    flight: 0,
+    elec: parseFloat(document.getElementById('mElec').value) || 0,
+    lpg: 0.5,
+    diet: parseFloat(document.getElementById('mDiet').value) || 140,
+    waste: parseFloat(document.getElementById('mWaste').value) || 45
+  };
+
+  personas.push(newProfile);
+  activePersonId = newId;
+  saveToStorage();
+
+  closeAddPersonModal();
+  renderPersonaPills();
+  loadPersonIntoForm(newId);
+  renderComparisonView();
+  switchTab('comparison');
+  alert(`Created profile for ${name}!`);
+}
+
+// ==========================================
+// TABS & QA COLLAPSE
+// ==========================================
+function switchTab(tabKey) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+
+  const activeContent = document.getElementById(`tab-${tabKey}`);
+  const activeBtn = document.getElementById(`tabBtn-${tabKey}`);
+
+  if (activeContent) activeContent.classList.add('active');
+  if (activeBtn) activeBtn.classList.add('active');
+
+  if (tabKey === 'comparison') {
+    renderComparisonView();
+  } else if (tabKey === 'simulator') {
+    runSimulation();
+  }
+}
+
+function toggleQA(headerEl) {
+  const ans = headerEl.nextElementSibling;
+  const arrow = headerEl.querySelector('span:last-child');
+  if (ans.style.display === 'none') {
+    ans.style.display = 'block';
+    arrow.textContent = '▲';
+  } else {
+    ans.style.display = 'none';
+    arrow.textContent = '▼';
+  }
+}
+
+// Kickoff on load
+document.addEventListener('DOMContentLoaded', initApp);
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  initApp();
+}
+</script>
+</body>
+</html>
