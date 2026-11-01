@@ -1,0 +1,3236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+<title>Carbon Footprint Estimator | Person-Wise Analysis & Sustainability Dashboard</title>
+<style>
+:root {
+  --primary: #4ade80;
+  --primary-dark: #bbf7d0;
+  --primary-light: #86efac;
+  --accent: #22c55e;
+  --mint: rgba(74, 222, 128, 0.12);
+  --mint-border: rgba(74, 222, 128, 0.32);
+  --dark: #eaf6ee;
+  --muted: #a7bdaa;
+  --bg: #04070a;
+  --card-bg: rgba(13, 22, 17, 0.78);
+  --line: rgba(120, 200, 150, 0.14);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  --transport: #38bdf8;
+  --electricity: #facc15;
+  --food: #4ade80;
+  --waste: #a78bfa;
+  --flight: #fb923c;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  background:
+    radial-gradient(1100px 620px at 72% -12%, rgba(34, 197, 94, 0.10), transparent 60%),
+    radial-gradient(900px 540px at 6% 6%, rgba(56, 189, 248, 0.05), transparent 55%),
+    radial-gradient(800px 500px at 50% 110%, rgba(34, 197, 94, 0.06), transparent 60%),
+    #04070a;
+  background-attachment: fixed;
+  color: var(--dark);
+  line-height: 1.6;
+}
+
+/* Header & Nav */
+header {
+  background: rgba(4, 9, 7, 0.82);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 2px 14px rgba(0,0,0,0.4);
+}
+.nav {
+  max-width: 1220px;
+  margin: 0 auto;
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+.brand {
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.brand-icon {
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.4);
+  border-radius: 12px;
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.18);
+}
+.nav-tabs {
+  display: flex;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(120, 200, 150, 0.12);
+  padding: 4px;
+  border-radius: 12px;
+}
+.nav-tab-btn {
+  border: none;
+  background: transparent;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  border-radius: 9px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.nav-tab-btn:hover {
+  color: var(--dark);
+  background: rgba(255, 255, 255, 0.07);
+}
+.nav-tab-btn.active {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: #03170c;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
+}
+
+/* Hero Section */
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: transparent;
+  border-bottom: 1px solid var(--line);
+  padding: 64px 24px 58px;
+}
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1220px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.35fr 0.65fr;
+  gap: 32px;
+  align-items: center;
+}
+
+/* Decorative globe (CSS-only, no assets) */
+.hero-globe {
+  position: absolute;
+  top: 50%;
+  right: 300px;
+  transform: translateY(-50%);
+  width: 330px;
+  height: 330px;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-inner > div:not(.hero-globe) {
+  position: relative;
+  z-index: 1;
+}
+.hero-globe::before {
+  content: "";
+  position: absolute;
+  inset: -70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.16), transparent 65%);
+}
+.globe-sphere {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(140, 205, 255, 0.16), transparent 44%),
+    radial-gradient(circle at 68% 64%, rgba(74, 222, 128, 0.12), transparent 48%),
+    radial-gradient(circle at 50% 50%, #0c1728 0%, #060c18 62%, #03060d 100%);
+  box-shadow:
+    inset -20px -16px 50px rgba(0, 0, 0, 0.8),
+    inset 12px 10px 38px rgba(130, 200, 255, 0.10),
+    0 0 80px rgba(74, 222, 128, 0.15),
+    0 0 24px rgba(56, 189, 248, 0.10);
+}
+.globe-sphere::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image:
+    radial-gradient(rgba(255, 214, 130, 0.6) 1px, transparent 1.7px),
+    radial-gradient(rgba(160, 220, 255, 0.45) 1px, transparent 1.7px);
+  background-size: 26px 26px, 35px 35px;
+  background-position: 0 0, 13px 19px;
+  -webkit-mask-image: radial-gradient(circle at 44% 40%, #000 24%, transparent 70%);
+  mask-image: radial-gradient(circle at 44% 40%, #000 24%, transparent 70%);
+  opacity: 0.65;
+}
+.globe-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 480px;
+  height: 128px;
+  transform: translate(-50%, -50%) rotate(-18deg);
+  border: 2px solid rgba(74, 222, 128, 0.5);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(74, 222, 128, 0.3), inset 0 0 18px rgba(74, 222, 128, 0.12);
+}
+.globe-orbit::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 62px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 14px 5px rgba(74, 222, 128, 0.8);
+}
+.globe-leaf {
+  position: absolute;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 10px rgba(74, 222, 128, 0.25));
+}
+.globe-leaf-1 {
+  bottom: -16px;
+  left: -40px;
+  width: 108px;
+  height: 108px;
+  transform: rotate(18deg);
+}
+.globe-leaf-2 {
+  bottom: 4px;
+  right: -24px;
+  width: 78px;
+  height: 78px;
+  transform: rotate(-140deg);
+}
+
+.eyebrow {
+  color: var(--primary-light);
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(74, 222, 128, 0.10);
+  border: 1px solid rgba(74, 222, 128, 0.32);
+  padding: 4px 12px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+.hero h1 {
+  font-size: clamp(30px, 4.4vw, 46px);
+  line-height: 1.12;
+  color: var(--dark);
+  font-weight: 850;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+.svg-ic { width: 14px; height: 14px; flex-shrink: 0; }
+.kpi-icon .svg-ic { width: 15px; height: 15px; }
+.neon-text {
+  color: var(--primary);
+  text-shadow: 0 0 26px rgba(74, 222, 128, 0.5);
+}
+.hero p {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.6;
+  max-width: 560px;
+  margin-bottom: 20px;
+}
+.hero-cta {
+  margin-bottom: 22px;
+}
+.persona-pills-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+.persona-pills-bar span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.persona-chip {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(120, 200, 150, 0.2);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #cfe8d6;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.persona-chip:hover {
+  border-color: var(--primary);
+  background: rgba(74, 222, 128, 0.10);
+  transform: translateY(-1px);
+}
+.persona-chip.active {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: #03170c;
+  border-color: transparent;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
+}
+
+.hero-card {
+  background: rgba(10, 20, 14, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid rgba(74, 222, 128, 0.22);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), 0 0 44px rgba(34, 197, 94, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #4ade80, #38bdf8, #facc15);
+}
+.hero-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.hero-tag {
+  background: var(--mint);
+  color: var(--primary-light);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1px solid var(--mint-border);
+}
+.hero-total-number {
+  font-size: 42px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+  margin: 10px 0 6px;
+}
+.hero-total-unit {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--muted);
+}
+.hero-active-person {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--primary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.eco-grade-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 14px;
+}
+.grade-green { background: rgba(74,222,128,0.13); color: #4ade80; border: 1px solid rgba(74,222,128,0.35); }
+.grade-yellow { background: rgba(250,204,21,0.12); color: #facc15; border: 1px solid rgba(250,204,21,0.35); }
+.grade-red { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.35); }
+
+.hero-stats-mini {
+  border-top: 1px solid rgba(120, 200, 150, 0.14);
+  padding-top: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  font-size: 12px;
+}
+.hero-stats-mini div span { color: var(--muted); }
+.hero-stats-mini div b {
+  display: block;
+  font-size: 15px;
+  color: var(--dark);
+  font-weight: 800;
+  margin-top: 2px;
+}
+
+/* Layout Container */
+.container {
+  max-width: 1220px;
+  margin: 28px auto 60px;
+  padding: 0 24px;
+}
+
+/* Tab Panels */
+.tab-content {
+  display: none;
+}
+.tab-content.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Buttons */
+.btn {
+  border: none;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  box-shadow: 0 4px 18px rgba(34, 197, 94, 0.35);
+  color: #03170c;
+  padding: 11px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+}
+.btn:hover {
+  background: linear-gradient(135deg, #86efac 0%, #4ade80 100%);
+  box-shadow: 0 6px 24px rgba(74, 222, 128, 0.5);
+  transform: translateY(-1px);
+}
+.btn.secondary {
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--dark);
+  border: 1px solid rgba(120, 200, 150, 0.3);
+  box-shadow: none;
+}
+.btn.secondary:hover {
+  background: rgba(74, 222, 128, 0.08);
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+.btn.warning {
+  background: #d97706;
+  color: #fff;
+}
+.btn.warning:hover {
+  background: #b45309;
+}
+.btn-sm {
+  padding: 7px 12px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+
+/* Section Header */
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.section-head h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 4px;
+}
+.section-head p {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+/* Grid & Cards */
+.layout-2col {
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 24px;
+}
+.card {
+  background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+.card-header {
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(120, 200, 150, 0.12);
+  padding-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.card-header h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--dark);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-header p {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+/* Form Styles */
+.form-section-title {
+  font-size: 13px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--primary);
+  margin: 18px 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.form-section-title:first-of-type {
+  margin-top: 0;
+}
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.form-group {
+  margin-bottom: 14px;
+}
+.form-group label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  font-weight: 700;
+  color: #cfe3d4;
+  margin-bottom: 6px;
+}
+.form-group label span.val-display {
+  color: var(--primary);
+  font-weight: 800;
+}
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid rgba(120, 200, 150, 0.22);
+  border-radius: 10px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--dark);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+}
+.form-control option {
+  background: #0b1710;
+  color: var(--dark);
+}
+.form-range {
+  width: 100%;
+  accent-color: var(--primary);
+  cursor: pointer;
+}
+.form-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+  display: block;
+}
+
+/* Dashboard Summary Cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+.kpi-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  position: relative;
+}
+.kpi-card.highlight {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border-color: rgba(74, 222, 128, 0.32);
+}
+.kpi-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--mint);
+  border: 1px solid var(--mint-border);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+}
+.kpi-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.kpi-value {
+  font-size: 26px;
+  font-weight: 900;
+  color: #ffffff;
+  margin: 6px 0 2px;
+  line-height: 1.1;
+}
+.kpi-sub {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* Donut & Chart Visualizer */
+.chart-container {
+  display: flex;
+  align-items: center;
+  gap: 26px;
+  padding: 16px 0;
+  flex-wrap: wrap;
+}
+.donut-box {
+  position: relative;
+  width: 180px;
+  height: 180px;
+  flex-shrink: 0;
+  margin: 0 auto;
+}
+.donut-svg {
+  transform: rotate(-90deg);
+  width: 180px;
+  height: 180px;
+}
+.donut-circle-bg {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.08);
+  stroke-width: 26;
+}
+.donut-center-info {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  pointer-events: none;
+}
+.donut-center-info strong {
+  font-size: 24px;
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1;
+}
+.donut-center-info span {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.legend-list {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 220px;
+}
+.legend-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+}
+.legend-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 4px;
+}
+.legend-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.legend-pct {
+  font-size: 11px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+/* Category Progress Bars */
+.category-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-top: 16px;
+}
+.bar-row-info {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 5px;
+}
+.bar-row-info span {
+  font-weight: 600;
+  color: #c4d8ca;
+}
+.bar-track {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.4s ease;
+}
+
+/* Comparison Benchmarks */
+.benchmark-block {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 16px;
+  margin-top: 20px;
+}
+.benchmark-title {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--dark);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.benchmark-meter {
+  position: relative;
+  height: 16px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  margin: 22px 0 10px;
+}
+.benchmark-user-pin {
+  position: absolute;
+  top: -24px;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: #03170c;
+  padding: 2px 7px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 800;
+  white-space: nowrap;
+  transition: left 0.4s ease;
+}
+.benchmark-user-pin::after {
+  content: "";
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 4px 4px 0 4px;
+  border-style: solid;
+  border-color: var(--primary) transparent transparent transparent;
+}
+.benchmark-target-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #34d399;
+  z-index: 2;
+}
+.benchmark-india-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #fbbf24;
+  z-index: 2;
+}
+.benchmark-world-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: #f87171;
+  z-index: 2;
+}
+.benchmark-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+/* Recommendations Grid */
+.recs-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 16px;
+  margin-top: 14px;
+}
+.rec-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 18px;
+  transition: transform 0.2s, border-color 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+.rec-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(74, 222, 128, 0.4);
+  box-shadow: var(--shadow-sm);
+}
+.rec-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.rec-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: var(--mint);
+  border: 1px solid var(--mint-border);
+  display: grid;
+  place-items: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.rec-card h4 {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--dark);
+}
+.rec-card p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 14px;
+}
+.rec-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(120, 200, 150, 0.12);
+  padding-top: 10px;
+  font-size: 12px;
+}
+.rec-save {
+  color: var(--primary);
+  font-weight: 800;
+}
+.badge-level {
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 11px;
+}
+.level-easy { background: rgba(74, 222, 128, 0.14); color: #4ade80; }
+.level-med { background: rgba(250, 204, 21, 0.14); color: #facc15; }
+
+/* PERSON-WISE COMPARISON STYLES */
+.personas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+  margin-bottom: 28px;
+}
+.person-profile-card {
+  background: var(--card-bg);
+  border: 2px solid var(--line);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+.person-profile-card:hover {
+  border-color: var(--primary-light);
+  box-shadow: var(--shadow);
+  transform: translateY(-2px);
+}
+.person-profile-card.selected {
+  border-color: var(--primary);
+  background: rgba(74, 222, 128, 0.06);
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.22);
+}
+.person-badge-top {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+}
+.person-avatar {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.person-name {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--dark);
+}
+.person-role {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+}
+.person-metrics-mini {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 12px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.person-metrics-mini .num {
+  font-size: 20px;
+  font-weight: 900;
+  color: var(--dark);
+}
+.person-metrics-mini .lbl {
+  font-size: 11px;
+  color: var(--muted);
+}
+.person-breakdown-tags {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-size: 11px;
+}
+.tag-pill {
+  background: rgba(255, 255, 255, 0.05);
+  color: #a9c4b2;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+/* Comparison Table */
+.table-responsive {
+  overflow-x: auto;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  margin-top: 16px;
+  background: rgba(10, 18, 14, 0.6);
+}
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+.compare-table th {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--dark);
+  font-weight: 800;
+  padding: 14px 16px;
+  border-bottom: 2px solid var(--line);
+  white-space: nowrap;
+}
+.compare-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(120, 200, 150, 0.09);
+  color: #c4d8ca;
+  white-space: nowrap;
+}
+.compare-table tr:hover td {
+  background: rgba(74, 222, 128, 0.05);
+}
+.compare-table tr.highlight-row td {
+  background: rgba(74, 222, 128, 0.09);
+  font-weight: 700;
+}
+.val-bold {
+  font-weight: 800;
+  color: var(--dark);
+}
+
+/* What-If Simulator */
+.sim-box {
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(74, 222, 128, 0.22);
+  border-radius: 18px;
+  padding: 24px;
+}
+.sim-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  align-items: center;
+}
+.sim-result-card {
+  background: rgba(8, 16, 12, 0.85);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+}
+.sim-diff-number {
+  font-size: 38px;
+  font-weight: 900;
+  color: var(--primary);
+  text-shadow: 0 0 24px rgba(74, 222, 128, 0.45);
+  margin: 10px 0 4px;
+}
+
+/* Modal Popup */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  z-index: 100;
+  place-items: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+.modal-overlay.open {
+  display: grid;
+}
+.modal-window {
+  background: #0b1510;
+  border: 1px solid rgba(120, 200, 150, 0.22);
+  border-radius: 20px;
+  max-width: 580px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 28px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.6);
+  animation: modalIn 0.25s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  border-bottom: 1px solid rgba(120, 200, 150, 0.12);
+  padding-bottom: 12px;
+}
+.modal-header h3 {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--dark);
+}
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 40px 24px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 13px;
+  background: transparent;
+}
+.footer-tagline {
+  margin-top: 16px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(74, 222, 128, 0.4);
+}
+
+/* Sync toast */
+#syncToast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+  background: #0b1a12; color: #d7f0df; padding: 10px 18px; border-radius: 12px;
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none;
+  transition: all 0.25s ease; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  max-width: 90vw; text-align: center;
+}
+#syncToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#ownerNote {
+  font-size: 12px; color: #fbbf24; background: rgba(251, 191, 36, 0.10); border: 1px solid rgba(251, 191, 36, 0.32);
+  border-radius: 8px; padding: 6px 12px; margin-top: 10px; display: none;
+}
+
+/* Print Styling */
+@media print {
+  header, .hero, .nav-tabs, .persona-pills-bar, .actions-bar, .btn, .hero-globe {
+    display: none !important;
+  }
+  body, .container {
+    background: #ffffff !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+  }
+  body, .section-head h2, .card-header h3, .kpi-value, .donut-center-info strong,
+  .compare-table th, .compare-table td, .form-group label, .person-name, .rec-card h4,
+  .val-bold, .sim-diff-number {
+    color: #1e2922 !important;
+    text-shadow: none !important;
+  }
+  .card, .kpi-card, .rec-card, .sim-result-card, .sim-box, .person-profile-card {
+    background: #ffffff !important;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    break-inside: avoid;
+  }
+}
+
+/* Responsive */
+@media (max-width: 1200px) {
+  .hero-globe { right: 190px; }
+}
+@media (max-width: 1000px) {
+  .hero-globe { display: none; }
+}
+@media (max-width: 900px) {
+  .hero-inner, .layout-2col, .sim-grid {
+    grid-template-columns: 1fr;
+  }
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+@media (max-width: 600px) {
+  .kpi-grid, .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
+  .nav {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .nav-tabs {
+    width: 100%;
+    overflow-x: auto;
+  }
+}
+
+
+/* ============================================================
+   ENERVANTA THEME - dark emerald command-center restyle
+   (appended override layer; earlier rules stay as fallbacks)
+   ============================================================ */
+:root {
+  --primary: #34d399;
+  --primary-dark: #a7f3d0;
+  --primary-light: #6ee7b7;
+  --accent: #10b981;
+  --mint: rgba(52, 211, 153, 0.10);
+  --mint-border: rgba(52, 211, 153, 0.32);
+  --dark: #e9f6ef;
+  --muted: #8fb3a4;
+  --bg: #04100c;
+  --card-bg: rgba(9, 25, 18, 0.88);
+  --line: rgba(52, 211, 153, 0.14);
+}
+
+body {
+  background:
+    radial-gradient(1000px 600px at 85% -10%, rgba(16, 185, 129, 0.14), transparent 60%),
+    radial-gradient(800px 500px at -5% 20%, rgba(52, 211, 153, 0.07), transparent 55%),
+    radial-gradient(900px 600px at 50% 115%, rgba(16, 185, 129, 0.08), transparent 60%),
+    #04100c;
+  background-attachment: fixed;
+}
+
+/* ---- Sidebar (desktop) ---- */
+.sidebar-foot { display: none; }
+
+@media (min-width: 901px) {
+  body { padding-left: 252px; }
+
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 252px;
+    background: linear-gradient(180deg, rgba(6, 19, 14, 0.98), rgba(4, 13, 10, 0.98));
+    border-bottom: none;
+    border-right: 1px solid var(--line);
+    box-shadow: 6px 0 30px rgba(0, 0, 0, 0.45);
+    z-index: 60;
+  }
+  .nav {
+    max-width: none;
+    margin: 0;
+    padding: 22px 16px;
+    height: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    flex-wrap: nowrap;
+    gap: 0;
+  }
+  .brand {
+    padding: 4px 6px 18px;
+    border-bottom: 1px solid var(--line);
+    font-size: 17px;
+  }
+  .brand-icon {
+    background: rgba(52, 211, 153, 0.12);
+    border: 1px solid rgba(52, 211, 153, 0.4);
+    box-shadow: 0 0 18px rgba(16, 185, 129, 0.25);
+  }
+  .nav-tabs {
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 18px;
+    background: transparent;
+    border: none;
+    padding: 0;
+    border-radius: 0;
+  }
+  .nav-tab-btn {
+    width: 100%;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 12px 14px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+    font-size: 13.5px;
+    position: relative;
+  }
+  .nav-tab-btn:hover {
+    background: rgba(52, 211, 153, 0.07);
+    color: var(--dark);
+  }
+  .nav-tab-btn.active {
+    background: linear-gradient(90deg, rgba(52, 211, 153, 0.18), rgba(52, 211, 153, 0.05));
+    border: 1px solid rgba(52, 211, 153, 0.35);
+    color: var(--primary-light);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.15), inset 0 0 18px rgba(16, 185, 129, 0.06);
+  }
+  .nav-tab-btn.active::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 20%;
+    bottom: 20%;
+    width: 3px;
+    border-radius: 3px;
+    background: #34d399;
+    box-shadow: 0 0 10px rgba(52, 211, 153, 0.9);
+  }
+  .sidebar-foot {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: auto;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: rgba(52, 211, 153, 0.07);
+    border: 1px solid rgba(52, 211, 153, 0.22);
+  }
+  .sidebar-foot b { display: block; font-size: 12px; color: var(--primary-light); }
+  .sidebar-foot span:last-child, .sidebar-foot div span { font-size: 11px; color: var(--muted); font-weight: 600; }
+}
+
+/* ---- Top command bar ---- */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 12px 28px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(4, 14, 10, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+.topbar-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--primary-light);
+  background: rgba(52, 211, 153, 0.10);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  border-radius: 999px;
+  padding: 5px 12px;
+  letter-spacing: 0.4px;
+}
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #34d399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.9);
+  animation: livePulse 1.8s ease-in-out infinite;
+  flex-shrink: 0;
+}
+@keyframes livePulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.45; transform: scale(0.82); }
+}
+.topbar-chip {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 12px;
+}
+.topbar-chip-accent { color: var(--primary-light); }
+
+/* ---- Panels & cards: deep emerald with soft glow ---- */
+.card {
+  background: linear-gradient(165deg, rgba(11, 30, 22, 0.94), rgba(6, 16, 12, 0.97));
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), inset 0 0 34px rgba(16, 185, 129, 0.04);
+}
+.card-header { border-bottom: 1px solid var(--line); }
+
+.kpi-card {
+  background: linear-gradient(160deg, rgba(13, 38, 27, 0.95), rgba(6, 16, 12, 0.97));
+  border: 1px solid rgba(52, 211, 153, 0.20);
+  border-radius: 16px;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 22px rgba(16, 185, 129, 0.06);
+}
+.kpi-card.highlight {
+  background: linear-gradient(160deg, rgba(21, 58, 41, 0.95), rgba(8, 22, 16, 0.97));
+  border-color: rgba(52, 211, 153, 0.40);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.45), 0 0 26px rgba(16, 185, 129, 0.14);
+}
+.kpi-icon {
+  background: rgba(52, 211, 153, 0.12);
+  border: 1px solid rgba(52, 211, 153, 0.35);
+  box-shadow: 0 0 12px rgba(16, 185, 129, 0.18);
+}
+.kpi-value {
+  color: #f2fbf6;
+  text-shadow: 0 0 20px rgba(52, 211, 153, 0.35);
+}
+
+/* ---- Buttons ---- */
+.btn {
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+  color: #032117;
+  box-shadow: 0 5px 18px rgba(16, 185, 129, 0.38);
+}
+.btn:hover {
+  background: linear-gradient(135deg, #6ee7b7 0%, #34d399 100%);
+  box-shadow: 0 8px 26px rgba(52, 211, 153, 0.5);
+}
+.btn.secondary {
+  background: rgba(52, 211, 153, 0.06);
+  color: var(--primary-light);
+  border: 1px solid rgba(52, 211, 153, 0.32);
+}
+.btn.secondary:hover {
+  background: rgba(52, 211, 153, 0.12);
+  border-color: var(--primary);
+}
+
+/* ---- Hero polish ---- */
+.neon-text {
+  color: #34d399 !important;
+  text-shadow: 0 0 24px rgba(52, 211, 153, 0.55), 0 0 60px rgba(16, 185, 129, 0.3) !important;
+}
+.hero-card {
+  background: linear-gradient(165deg, rgba(11, 32, 23, 0.95), rgba(5, 15, 11, 0.97)) !important;
+  border: 1px solid rgba(52, 211, 153, 0.28) !important;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), 0 0 34px rgba(16, 185, 129, 0.10) !important;
+}
+.hero-total-number {
+  color: #f2fbf6 !important;
+  text-shadow: 0 0 26px rgba(52, 211, 153, 0.45);
+}
+.hero-tag {
+  background: rgba(52, 211, 153, 0.12) !important;
+  color: var(--primary-light) !important;
+  border: 1px solid rgba(52, 211, 153, 0.35) !important;
+}
+.grade-green { background: rgba(52,211,153,0.13); color: #34d399; border: 1px solid rgba(52,211,153,0.35); }
+
+/* ---- Forms ---- */
+.form-control {
+  background: rgba(5, 18, 13, 0.9);
+  border: 1px solid var(--line);
+  color: var(--dark);
+}
+.form-control:focus {
+  border-color: rgba(52, 211, 153, 0.55);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+}
+.form-control option { background: #071510; color: var(--dark); }
+
+/* ---- Persona chips ---- */
+.persona-chip {
+  background: rgba(9, 25, 18, 0.85);
+  border: 1px solid var(--line);
+}
+.persona-chip.active {
+  background: linear-gradient(135deg, #34d399, #10b981);
+  border-color: transparent;
+}
+
+/* ---- Comparison table glow ---- */
+.compare-table th { color: var(--primary-light); }
+
+/* ---- Mobile: topbar tucks under sticky header ---- */
+@media (max-width: 900px) {
+  .topbar { padding: 10px 16px; }
+}
+
+</style>
+</head>
+<body>
+
+<!-- Navigation Header -->
+<header>
+  <div class="nav">
+    <a href="#" class="brand" onclick="switchTab('calculator'); return false;">
+      <span class="brand-icon">🌱</span>
+      <div>
+        <span>Carbon Footprint Estimator</span>
+        <div style="font-size: 11px; font-weight: 600; color: var(--muted);">Measure • Understand • Reduce</div>
+      </div>
+    </a>
+    
+    <div class="nav-tabs">
+      <button class="nav-tab-btn active" id="tabBtn-calculator" onclick="switchTab('calculator')">
+        <span>🧮 Calculator & Results</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-comparison" onclick="switchTab('comparison')">
+        <span>👥 Person-Wise Analysis</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-simulator" onclick="switchTab('simulator')">
+        <span>📈 What-If Simulator</span>
+      </button>
+    </div>
+    <div class="sidebar-foot">
+      <span class="live-dot"></span>
+      <div>
+        <b>Live Sync Active</b>
+        <span>Profiles update in real-time</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- Top Command Bar (EnerVanta style) -->
+<div class="topbar">
+  <span class="topbar-live"><span class="live-dot"></span> Live</span>
+  <span class="topbar-chip" id="topbarDate"></span>
+  <span class="topbar-chip topbar-chip-accent">🌏 Personal CO₂e Command Center</span>
+</div>
+<script>
+document.getElementById('topbarDate').textContent = '📅 ' + new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+</script>
+
+<!-- Hero Section -->
+<section class="hero">
+  <div class="hero-inner">
+  <div class="hero-globe" aria-hidden="true">
+    <div class="globe-orbit"></div>
+    <div class="globe-sphere"></div>
+    <svg class="globe-leaf globe-leaf-1" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M50 96 C18 74 8 40 16 12 C48 18 76 44 76 74 C76 86 64 96 50 96 Z" fill="#16a34a" stroke="#4ade80" stroke-width="2.5"/>
+      <path d="M50 90 C44 60 36 38 22 20" stroke="#bbf7d0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M44 66 C52 60 60 58 68 58 M40 50 C48 44 56 42 62 42 M36 36 C42 32 48 30 54 30" stroke="#86efac" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>
+    <svg class="globe-leaf globe-leaf-2" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M50 96 C18 74 8 40 16 12 C48 18 76 44 76 74 C76 86 64 96 50 96 Z" fill="#15803d" stroke="#4ade80" stroke-width="2.5"/>
+      <path d="M50 90 C44 60 36 38 22 20" stroke="#bbf7d0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M44 66 C52 60 60 58 68 58 M40 50 C48 44 56 42 62 42 M36 36 C42 32 48 30 54 30" stroke="#86efac" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
+    <div>
+      <div class="eyebrow">
+        <svg class="svg-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#22c55e"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#bbf7d0" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg> A Greener Tomorrow
+      </div>
+      <h1>Carbon Footprint <span class="neon-text">Estimator</span></h1>
+      <p>
+        Calculate, breakdown, and compare greenhouse gas emissions (CO₂e) across different individual lifestyles and personas. See how transportation, electricity, diet, and consumption directly dictate personal carbon emissions.
+      </p>
+
+      <button class="btn hero-cta" onclick="switchTab('calculator'); document.querySelector('main.container').scrollIntoView({behavior:'smooth'});"><svg class="svg-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#052012"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#4ade80" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg> Start Calculating →</button>
+
+      <div style="font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 6px;">
+        ⚡ Instant Quick Personas (Click to test person-wise):
+      </div>
+      <div class="persona-pills-bar" id="personaPills">
+        <!-- Rendered dynamically -->
+      </div>
+    </div>
+
+    <!-- Hero Snapshot Card -->
+    <div class="hero-card">
+      <div class="hero-card-header">
+        <span class="hero-tag">Current Profile</span>
+        <div class="hero-active-person" id="heroPersonName">👤 Aarav (College Student)</div>
+      </div>
+      
+      <div class="hero-total-number" id="heroTotalNum">2.3</div>
+      <div class="hero-total-unit">Tonnes CO₂e / year</div>
+
+      <div style="margin-top: 12px;">
+        <span class="eco-grade-badge grade-green" id="heroGradeBadge">
+          <span>🌿</span> Eco-Rating: Low Impact (Sustainable)
+        </span>
+      </div>
+
+      <div class="hero-stats-mini">
+        <div>
+          <span>Monthly Footprint</span>
+          <b id="heroMonthlyStat">191 kg CO₂e</b>
+        </div>
+        <div>
+          <span>Primary Contributor</span>
+          <b id="heroTopCategory">Food & Diet (52%)</b>
+        </div>
+      </div>
+      <div style="margin-top: 14px; display: flex; gap: 8px;">
+        <button class="btn btn-sm" onclick="switchTab('calculator')">Edit Values ↘</button>
+        <button class="btn btn-sm secondary" onclick="switchTab('comparison')">Compare People 👥</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Main Container -->
+<main class="container">
+
+  <!-- ======================================================== -->
+  <!-- TAB 1: CALCULATOR & DASHBOARD -->
+  <!-- ======================================================== -->
+  <div id="tab-calculator" class="tab-content active">
+    
+    <div class="section-head">
+      <div>
+        <h2>Individual Footprint Calculator</h2>
+        <p>Adjust monthly activity data for <b id="activeProfileLabel">Aarav (College Student)</b>. All emissions recalculate instantly.</p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-sm secondary" onclick="openAddPersonModal()">+ Add New Person Profile</button>
+        <button class="btn btn-sm secondary" onclick="resetCurrentForm()">↺ Reset to Defaults</button>
+      </div>
+    </div>
+
+    <div class="layout-2col">
+      
+      <!-- Left Column: Input Form -->
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h3>📝 Activity Inputs</h3>
+            <p>Input real or simulated monthly consumption parameters</p>
+          </div>
+          <span class="hero-tag" id="currentProfileTag">Aarav</span>
+        </div>
+
+        <form id="calcForm" onsubmit="return false;">
+          
+          <!-- Category 1: Transportation -->
+          <div class="form-section-title">
+            <span>🚗</span> 1. Transportation & Travel
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="inputCar">Car Travel <span class="val-display" id="dispCar">0 km</span></label>
+              <input type="range" class="form-range" id="inputCar" min="0" max="2000" step="10" value="0" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numCar" min="0" max="5000" value="0" oninput="syncRange('inputCar', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Private car (Factor: 0.18 kg CO₂e/km)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="inputBike">Motorcycle / Scooter <span class="val-display" id="dispBike">40 km</span></label>
+              <input type="range" class="form-range" id="inputBike" min="0" max="1500" step="10" value="40" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numBike" min="0" max="3000" value="40" oninput="syncRange('inputBike', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Two-wheeler (Factor: 0.07 kg CO₂e/km)</small>
+            </div>
+          </div>
+
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="inputPublic">Bus, Metro & Train <span class="val-display" id="dispPublic">180 km</span></label>
+              <input type="range" class="form-range" id="inputPublic" min="0" max="2000" step="10" value="180" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numPublic" min="0" max="5000" value="180" oninput="syncRange('inputPublic', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Public transport (Factor: 0.04 kg CO₂e/km)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="inputFlight">Flight Hours (Annual) <span class="val-display" id="dispFlight">0 hrs</span></label>
+              <input type="range" class="form-range" id="inputFlight" min="0" max="80" step="1" value="0" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numFlight" min="0" max="200" value="0" oninput="syncRange('inputFlight', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Domestic / Intl flights (Factor: 90 kg CO₂e/hr)</small>
+            </div>
+          </div>
+
+          <!-- Category 2: Electricity & Energy -->
+          <div class="form-section-title">
+            <span>⚡</span> 2. Household & Energy
+          </div>
+          <div class="form-grid-2">
+            <div class="form-group">
+              <label for="inputElec">Electricity Consumption <span class="val-display" id="dispElec">40 kWh</span></label>
+              <input type="range" class="form-range" id="inputElec" min="0" max="1000" step="10" value="40" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numElec" min="0" max="2000" value="40" oninput="syncRange('inputElec', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Monthly kWh (Grid factor: 0.70 kg CO₂e/kWh)</small>
+            </div>
+
+            <div class="form-group">
+              <label for="inputLpg">LPG Cylinder Usage <span class="val-display" id="dispLpg">0 cyl</span></label>
+              <input type="range" class="form-range" id="inputLpg" min="0" max="4" step="0.1" value="0" oninput="updateCalculation()">
+              <input type="number" class="form-control" id="numLpg" min="0" max="10" step="0.1" value="0" oninput="syncRange('inputLpg', this.value)" style="margin-top: 6px;">
+              <small class="form-hint">Cylinders/mo per person share (Factor: 42.5 kg/cyl)</small>
+            </div>
+          </div>
+
+          <!-- Category 3: Diet & Food -->
+          <div class="form-section-title">
+            <span>🥗</span> 3. Diet & Nutrition Type
+          </div>
+          <div class="form-group">
+            <label for="selectDiet">Select Primary Diet Habit</label>
+            <select class="form-control" id="selectDiet" onchange="updateCalculation()">
+              <option value="100">Vegan / Strict Plant-Based (~100 kg CO₂e / month)</option>
+              <option value="140" selected>Vegetarian (Dairy, pulses, grains) (~140 kg CO₂e / month)</option>
+              <option value="180">Mixed Diet (Occasional chicken, eggs, fish) (~180 kg CO₂e / month)</option>
+              <option value="250">Meat-Heavy Diet (Frequent red meat & poultry) (~250 kg CO₂e / month)</option>
+            </select>
+            <small class="form-hint">Food production, processing, transport, and methane footprint</small>
+          </div>
+
+          <!-- Category 4: Waste & Consumption -->
+          <div class="form-section-title">
+            <span>🛍️</span> 4. Goods, Packaging & Waste
+          </div>
+          <div class="form-group">
+            <label for="selectWaste">Shopping & Waste Level</label>
+            <select class="form-control" id="selectWaste" onchange="updateCalculation()">
+              <option value="20" selected>Low Waste & Minimalist (~20 kg CO₂e / month)</option>
+              <option value="45">Moderate / Typical Urban Household (~45 kg CO₂e / month)</option>
+              <option value="85">High Consumption & Frequent Online Packaging (~85 kg CO₂e / month)</option>
+            </select>
+            <small class="form-hint">Includes consumer goods, packaging materials, and municipal landfill disposal</small>
+          </div>
+
+          <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <button class="btn" type="button" id="saveProfileBtn" onclick="saveCurrentProfileEdits()">💾 Save Changes to Profile</button>
+            <div id="ownerNote">👀 View only - this profile was created on another device. Clone it to make your own copy.</div>
+            <button class="btn secondary" type="button" onclick="openAddPersonModal()">👥 Clone to New Person</button>
+          </div>
+
+        </form>
+      </div>
+
+      <!-- Right Column: Results Dashboard -->
+      <div>
+        
+        <!-- KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card highlight">
+            <div class="kpi-icon"><svg class="svg-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#22c55e"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#bbf7d0" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></div>
+            <div class="kpi-label">Annual Footprint</div>
+            <div class="kpi-value" id="kpiAnnual">2.3 <span style="font-size: 14px; font-weight: 600;">t</span></div>
+            <div class="kpi-sub">tonnes CO₂e / year</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><svg class="svg-ic" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M3.5 10h17M8 2.5v4M16 2.5v4"/></svg></div>
+            <div class="kpi-label">Monthly Footprint</div>
+            <div class="kpi-value" id="kpiMonthly">191 <span style="font-size: 14px; font-weight: 600;">kg</span></div>
+            <div class="kpi-sub">kg CO₂e / month</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-icon"><svg class="svg-ic" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3.2 3 13.8 0 17c-3-3.2-3-13.8 0-17z"/></svg></div>
+            <div class="kpi-label">Daily Average</div>
+            <div class="kpi-value" id="kpiDaily">6.4 <span style="font-size: 14px; font-weight: 600;">kg</span></div>
+            <div class="kpi-sub">kg CO₂e / day</div>
+          </div>
+        </div>
+
+        <!-- Donut Chart & Category Breakdown Card -->
+        <div class="card" style="margin-bottom: 20px;">
+          <div class="card-header">
+            <div>
+              <h3>📊 Category Breakdown</h3>
+              <p>Contribution of each lifestyle activity</p>
+            </div>
+            <span class="badge-level level-easy" id="offsetTreesBadge">🌳 ~46 Trees to Offset</span>
+          </div>
+
+          <!-- SVG Donut Chart -->
+          <div class="chart-container">
+            <div class="donut-box">
+              <svg class="donut-svg" viewBox="0 0 100 100">
+                <circle class="donut-circle-bg" cx="50" cy="50" r="37"></circle>
+                <circle id="donutSegmentTransport" cx="50" cy="50" r="37" fill="none" stroke="var(--transport)" stroke-width="26" stroke-dasharray="0 232.5" stroke-dashoffset="0"></circle>
+                <circle id="donutSegmentElec" cx="50" cy="50" r="37" fill="none" stroke="var(--electricity)" stroke-width="26" stroke-dasharray="0 232.5" stroke-dashoffset="0"></circle>
+                <circle id="donutSegmentFood" cx="50" cy="50" r="37" fill="none" stroke="var(--food)" stroke-width="26" stroke-dasharray="0 232.5" stroke-dashoffset="0"></circle>
+                <circle id="donutSegmentWaste" cx="50" cy="50" r="37" fill="none" stroke="var(--waste)" stroke-width="26" stroke-dasharray="0 232.5" stroke-dashoffset="0"></circle>
+              </svg>
+              <div class="donut-center-info">
+                <strong id="donutCenterVal">191</strong>
+                <span>kg CO₂e/mo</span>
+              </div>
+            </div>
+
+            <!-- Legend List -->
+            <div class="legend-list">
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background: var(--transport);"></div>
+                  <span>Transport & Flights</span>
+                </div>
+                <div class="legend-right">
+                  <b id="legendValTransport">10.0 kg</b>
+                  <span class="legend-pct" id="legendPctTransport">5%</span>
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background: var(--electricity);"></div>
+                  <span>Electricity & Gas</span>
+                </div>
+                <div class="legend-right">
+                  <b id="legendValElec">28.0 kg</b>
+                  <span class="legend-pct" id="legendPctElec">15%</span>
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background: var(--food);"></div>
+                  <span>Diet & Food</span>
+                </div>
+                <div class="legend-right">
+                  <b id="legendValFood">140.0 kg</b>
+                  <span class="legend-pct" id="legendPctFood">73%</span>
+                </div>
+              </div>
+
+              <div class="legend-item">
+                <div class="legend-left">
+                  <div class="legend-dot" style="background: var(--waste);"></div>
+                  <span>Waste & Goods</span>
+                </div>
+                <div class="legend-right">
+                  <b id="legendValWaste">20.0 kg</b>
+                  <span class="legend-pct" id="legendPctWaste">7%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress Bars -->
+          <div class="category-bars" id="categoryBarsContainer">
+            <!-- Dynamic Category Bars -->
+          </div>
+
+          <!-- Benchmark Meter -->
+          <div class="benchmark-block">
+            <div class="benchmark-title">
+              <span>🎯</span> How does this person compare to Global & National averages?
+            </div>
+            <div class="benchmark-meter">
+              <div class="benchmark-user-pin" id="benchmarkUserPin" style="left: 23%;">
+                You: 2.3 t
+              </div>
+              <div class="benchmark-target-line" style="left: 20%;" title="Paris Climate Target (2.0 t)"></div>
+              <div class="benchmark-india-line" style="left: 19%;" title="India Average (1.9 t)"></div>
+              <div class="benchmark-world-line" style="left: 47%;" title="World Average (4.7 t)"></div>
+            </div>
+            <div class="benchmark-labels">
+              <span>0 t</span>
+              <span style="color: #4ade80;">🌱 Target: 2.0 t</span>
+              <span style="color: #fbbf24;">🇮🇳 India: 1.9 t</span>
+              <span style="color: #f87171;">🌐 World: 4.7 t</span>
+              <span>10 t+</span>
+            </div>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 10px;" id="benchmarkExplainText">
+              <!-- Dynamically populated comparison statement -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Action / Recommendations Preview -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h3>💡 Tailored Reduction Recommendations</h3>
+              <p>Top actionable measures to reduce this person's footprint</p>
+            </div>
+            <button class="btn btn-sm secondary" id="pdfReportBtn" onclick="downloadPDFReport()"><svg class="svg-ic" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px;"><path d="M12 3v11m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg> Download PDF Report</button>
+          </div>
+          <div class="recs-grid" id="recsContainer">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- TAB 2: PERSON-WISE ANALYSIS & COMPARISON -->
+  <!-- ======================================================== -->
+  <div id="tab-comparison" class="tab-content">
+    
+    <div class="section-head">
+      <div>
+        <h2>👥 Person-Wise Comparative Analysis</h2>
+        <p>Demonstrate how carbon footprints drastically vary across diverse lifestyles, professions, and daily habits.</p>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <button class="btn btn-sm" onclick="openAddPersonModal()">+ Add New Person Profile</button>
+        <button class="btn btn-sm secondary" onclick="loadSamplePersonas()">↺ Reset Default Personas</button>
+      </div>
+    </div>
+
+    <!-- Persona Cards Grid -->
+    <div class="personas-grid" id="personasCardsGrid">
+      <!-- Generated via JS -->
+    </div>
+
+    <!-- Comparative Table -->
+    <div class="card" style="margin-bottom: 24px;">
+      <div class="card-header">
+        <div>
+          <h3>📊 Side-by-Side Person Breakdown Table</h3>
+          <p>Direct category-by-category numerical comparison across all profiles</p>
+        </div>
+        <span class="hero-tag">College Demo Table</span>
+      </div>
+
+      <div class="table-responsive">
+        <table class="compare-table" id="comparisonTable">
+          <thead>
+            <tr>
+              <th>Person Name & Persona</th>
+              <th>Transport (kg/mo)</th>
+              <th>Electricity & Gas (kg/mo)</th>
+              <th>Diet & Food (kg/mo)</th>
+              <th>Waste & Goods (kg/mo)</th>
+              <th>Monthly Total</th>
+              <th>Annual Total</th>
+              <th>Trees Needed</th>
+              <th>Eco Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="comparisonTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Key Insights & Professor Summary -->
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <h3>🔍 Key Analytical Observations (For Viva Presentation)</h3>
+          <p>Scientific deductions you can explain to your teacher</p>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border-left: 4px solid var(--primary);">
+          <b style="color: var(--primary); display: block; margin-bottom: 4px;">🚗 Impact of Solo Car Travel:</b>
+          <span style="font-size: 13px; color: var(--muted);">
+            Comparing Vikram (Corporate Exec) with Sneha (Metro Commuter) shows that daily solo car driving is the single biggest driver of high individual carbon footprints in urban areas.
+          </span>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border-left: 4px solid #eab308;">
+          <b style="color: #fbbf24; display: block; margin-bottom: 4px;">⚡ Electricity & AC Grid Factor:</b>
+          <span style="font-size: 13px; color: var(--muted);">
+            High thermal grid emission factors (0.70 kg CO₂e/kWh in India) make prolonged air-conditioner usage another heavy contributor to personal emissions.
+          </span>
+        </div>
+        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border-left: 4px solid #10b981;">
+          <b style="color: #34d399; display: block; margin-bottom: 4px;">🥗 The Plant-Based Advantage:</b>
+          <span style="font-size: 13px; color: var(--muted);">
+            Switching from a meat-heavy diet (250 kg/mo) to vegetarian (140 kg/mo) or plant-based (100 kg/mo) creates an instant reduction of 1.3 to 1.8 tonnes of CO₂e per person annually.
+          </span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ======================================================== -->
+  <!-- TAB 3: WHAT-IF SCENARIO SIMULATOR -->
+  <!-- ======================================================== -->
+  <div id="tab-simulator" class="tab-content">
+    
+    <div class="section-head">
+      <div>
+        <h2>🧪 "What-If" Habit Reduction Simulator</h2>
+        <p>Show your teacher how targeted lifestyle modifications drastically shrink personal emissions.</p>
+      </div>
+      <div>
+        <span class="hero-tag">Interactive Policy & Habit Testing</span>
+      </div>
+    </div>
+
+    <div class="sim-box">
+      <div class="sim-grid">
+        
+        <div>
+          <h3 style="font-size: 18px; font-weight: 800; color: var(--dark); margin-bottom: 6px;">
+            Simulate Changes for: <span id="simPersonName" style="color: var(--primary);">Vikram (Corporate Executive)</span>
+          </h3>
+          <p style="font-size: 13px; color: var(--muted); margin-bottom: 20px;">
+            Adjust the habit change levers below to see real-time emission savings and offset equivalents.
+          </p>
+
+          <div class="form-group">
+            <label for="simShiftMetro">
+              <span>🚆 Switch Car Travel to Metro / Public Transit:</span>
+              <span class="val-display" id="simValMetro">50% Shift</span>
+            </label>
+            <input type="range" class="form-range" id="simShiftMetro" min="0" max="100" step="5" value="50" oninput="runSimulation()">
+            <small class="form-hint">Replaces high-emission car distance with low-emission electric metro</small>
+          </div>
+
+          <div class="form-group">
+            <label for="simCutElec">
+              <span>💡 Electricity Conservation (AC temp 26°C + LED):</span>
+              <span class="val-display" id="simValElec">25% Reduction</span>
+            </label>
+            <input type="range" class="form-range" id="simCutElec" min="0" max="60" step="5" value="25" oninput="runSimulation()">
+            <small class="form-hint">Turning up AC thermostat and unplugging phantom loads saves electricity</small>
+          </div>
+
+          <div class="form-group">
+            <label for="simDietShift">
+              <span>🥗 Dietary Shift:</span>
+              <span class="val-display" id="simValDiet">Shift to Vegetarian</span>
+            </label>
+            <select class="form-control" id="simDietShift" onchange="runSimulation()">
+              <option value="keep">Keep Current Diet</option>
+              <option value="vegetarian" selected>Adopt Vegetarian Diet (-110 kg/mo)</option>
+              <option value="vegan">Adopt Plant-Based / Vegan Diet (-150 kg/mo)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="simWasteReduction">
+              <span>♻️ Waste & Plastic Reduction:</span>
+              <span class="val-display" id="simValWaste">Zero Single-Use Plastic</span>
+            </label>
+            <select class="form-control" id="simWasteReduction" onchange="runSimulation()">
+              <option value="0">Current Waste Level</option>
+              <option value="25" selected>Active Recycling & Composting (25% cut)</option>
+              <option value="50">Strict Zero-Waste Lifestyle (50% cut)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Simulation Result Card -->
+        <div class="sim-result-card">
+          <span class="hero-tag" style="background: rgba(74,222,128,0.13); color: #4ade80; border: 1px solid rgba(74,222,128,0.35);">🎉 Projected Environmental Impact</span>
+          
+          <div class="sim-diff-number" id="simSavedKg">
+            -2,740 kg
+          </div>
+          <div style="font-size: 14px; font-weight: 700; color: var(--muted); margin-bottom: 14px;">
+            CO₂e Saved Every Year!
+          </div>
+
+          <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(120,200,150,0.12); border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: left; font-size: 13px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>Baseline Footprint:</span>
+              <b id="simBaselineVal">8.8 tonnes / yr</b>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px; color: var(--primary);">
+              <span>New Projected Footprint:</span>
+              <b id="simNewVal">6.1 tonnes / yr</b>
+            </div>
+            <div style="display: flex; justify-content: space-between; font-weight: 800; border-top: 1px solid rgba(120,200,150,0.18); padding-top: 6px;">
+              <span>Total Reduction:</span>
+              <span id="simPctVal" style="color: var(--primary);">-31.1%</span>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 700; color: #4ade80;">
+            <span>🌳 Equivalent to planting <b>55 mature trees</b></span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+
+</main>
+
+<!-- Modal: Add New Person Profile -->
+<div class="modal-overlay" id="addPersonModal">
+  <div class="modal-window">
+    <div class="modal-header">
+      <h3>👥 Add New Person Profile</h3>
+      <button class="modal-close" onclick="closeAddPersonModal()">×</button>
+    </div>
+    
+    <form id="newPersonForm" onsubmit="handleCreatePerson(event)">
+      <div class="form-group">
+        <label for="newPersonName">Person Name / Role</label>
+        <input type="text" class="form-control" id="newPersonName" placeholder="e.g. Ma'am, Priya, Rohan, Dad" required>
+      </div>
+
+      <div class="form-group">
+        <label for="newPersonTemplate">Load from Preset Archetype</label>
+        <select class="form-control" id="newPersonTemplate" onchange="populateTemplateValues(this.value)">
+          <option value="custom">Custom Values</option>
+          <option value="student">College Student (Eco-conscious)</option>
+          <option value="commuter">Daily Metro Commuter</option>
+          <option value="executive">Corporate Executive (Car User)</option>
+          <option value="family">Suburban Family Member</option>
+        </select>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Car Travel (km/mo)</label>
+          <input type="number" class="form-control" id="mCar" value="100" min="0">
+        </div>
+        <div class="form-group">
+          <label>Bike (km/mo)</label>
+          <input type="number" class="form-control" id="mBike" value="50" min="0">
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Public Transit (km/mo)</label>
+          <input type="number" class="form-control" id="mPublic" value="150" min="0">
+        </div>
+        <div class="form-group">
+          <label>Electricity (kWh/mo)</label>
+          <input type="number" class="form-control" id="mElec" value="90" min="0">
+        </div>
+      </div>
+
+      <div class="form-grid-2">
+        <div class="form-group">
+          <label>Diet Type</label>
+          <select class="form-control" id="mDiet">
+            <option value="100">Vegan (100 kg)</option>
+            <option value="140" selected>Vegetarian (140 kg)</option>
+            <option value="180">Mixed (180 kg)</option>
+            <option value="250">Meat-Heavy (250 kg)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Waste Level</label>
+          <select class="form-control" id="mWaste">
+            <option value="20">Low (20 kg)</option>
+            <option value="45" selected>Moderate (45 kg)</option>
+            <option value="85">High (85 kg)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+        <button type="button" class="btn secondary" onclick="closeAddPersonModal()">Cancel</button>
+        <button type="submit" class="btn">Create & Compare Person</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div style="max-width: 900px; margin: 0 auto;">
+    <div style="font-weight: 800; font-size: 16px; color: var(--dark); margin-bottom: 6px;">
+      🌱 Carbon Footprint Estimator
+    </div>
+    <p style="margin-bottom: 12px;">
+      Academic Project Demonstration for Environmental Impact Assessment & Individual Lifestyle Carbon Auditing.
+    </p>
+    <div style="font-size: 11px; color: #72897c;">
+      Calculations adhere to standard IPCC and CEA greenhouse gas conversion methodologies. Built for pair-programming and presentation showcase.
+    </div>
+    <div class="footer-tagline"><svg class="svg-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#22c55e"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#bbf7d0" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg> Reduce Your Carbon Footprint, Save Our Planet <svg class="svg-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#22c55e"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#bbf7d0" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></div>
+  </div>
+</footer>
+
+<!-- Application Logic -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ==========================================
+// DATA STORE & DEFAULT PERSONAS
+// ==========================================
+const DEFAULT_PERSONAS = [
+  {
+    id: 'p1',
+    name: 'Aarav',
+    role: 'College Student (Hosteller)',
+    avatar: '🎓',
+    car: 0,
+    bike: 40,
+    public: 180,
+    flight: 0,
+    elec: 40,
+    lpg: 0,
+    diet: 140,
+    waste: 20
+  },
+  {
+    id: 'p2',
+    name: 'Sneha',
+    role: 'Metro Commuter / Junior Dev',
+    avatar: '🚆',
+    car: 50,
+    bike: 60,
+    public: 240,
+    flight: 2,
+    elec: 110,
+    lpg: 0.5,
+    diet: 180,
+    waste: 45
+  },
+  {
+    id: 'p3',
+    name: 'Vikram',
+    role: 'Corporate Executive (Car Commuter)',
+    avatar: '🚗',
+    car: 700,
+    bike: 0,
+    public: 20,
+    flight: 10,
+    elec: 320,
+    lpg: 1.2,
+    diet: 250,
+    waste: 85
+  },
+  {
+    id: 'p4',
+    name: 'Ananya',
+    role: 'Eco-Warrior / Green Champion',
+    avatar: '🌿',
+    car: 0,
+    bike: 20,
+    public: 120,
+    flight: 0,
+    elec: 50,
+    lpg: 0.2,
+    diet: 100,
+    waste: 20
+  }
+];
+
+let personas = [];
+let activePersonId = 'p1';
+
+
+// ==========================================
+// CLOUD SYNC ENGINE (Firebase Realtime Database)
+// Cross-device person-wise profiles: public read, authenticated
+// per-profile writes (Firebase anonymous auth). localStorage stays
+// as the offline cache; without config the app works exactly as before.
+// ==========================================
+const FIREBASE_CONFIG = {apiKey:"AIzaSyBEUZAfmk-d1s79DtLE6U3o95KWHsTnd34",authDomain:"carbon-footprint-estimater.firebaseapp.com",databaseURL:"https://carbon-footprint-estimater-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"carbon-footprint-estimater",storageBucket:"carbon-footprint-estimater.firebasestorage.app",messagingSenderId:"412453988300",appId:"1:412453988300:web:58f8bfe99f97b3af585f69"};
+let syncDb = null;
+let syncUid = null;
+let lastRemoteSnapshot = null;
+let pushTimer = null;
+let pushPending = false;
+let gotFirstRemote = false;
+let knownDeleted = {}; // ids the server has tombstoned - never resurrect these
+
+function canonSnap(list) {
+  return JSON.stringify((list || []).map(function(p){
+    const o = {}; Object.keys(p).sort().forEach(function(k){ o[k] = p[k]; });
+    return o;
+  }));
+}
+
+// Merge by profile id: different profiles always merge additively;
+// the shared version wins per profile id (last write wins per profile).
+// Profiles marked deleted on the server are soft-deleted everywhere.
+function mergePersonas(remoteList) {
+  const map = {};
+  remoteList.forEach(function(p){ if (p && p.id) map[p.id] = p; });
+  personas.forEach(function(p){ if (p && p.id && !map[p.id]) map[p.id] = p; });
+  return Object.values(map).filter(function(p){ return !p.deleted; });
+}
+
+// Only custom profiles (created via "Add New Person") sync across devices.
+// Built-in sample personas stay local to each device and are never claimed.
+function isCustomProfile(p) { return !!(p && p.id && String(p.id).indexOf('p_') === 0); }
+function canEditProfile(p) {
+  if (!isCustomProfile(p)) return true;          // built-ins: local edit, unsynced
+  if (!p.owner) return true;                     // created here, not yet synced
+  return !!syncUid && p.owner === syncUid;       // synced: owner only
+}
+
+let toastTimer = null;
+function showSyncToast(msg) {
+  const t = document.getElementById('syncToast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 4000);
+}
+
+function pushProfile(p) {
+  if (!syncDb || !syncUid || !isCustomProfile(p)) return;
+  if (p.owner && p.owner !== syncUid) return; // never claim or overwrite someone else's profile
+  if (knownDeleted[p.id]) return; // tombstoned on the server (deleted on another device): never resurrect
+  p.owner = syncUid; // ownership stamp required by the security rules
+  syncDb.ref('eco_carbon/personas/' + p.id).set(p).catch(function() {
+    showSyncToast('Cloud save failed - changes are kept on this device only.');
+  });
+}
+function pushAllProfiles() { personas.forEach(function(p){ if (!p.deleted) pushProfile(p); }); }
+function schedulePush() {
+  if (!syncUid) { pushPending = true; }
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(pushAllProfiles, 800);
+}
+
+
+function applyRemote(remoteList) {
+  const snap = canonSnap(remoteList);
+  if (snap === lastRemoteSnapshot) return;
+  const hadLocalOnly = personas.some(function(p){
+    return isCustomProfile(p) && !p.owner && !remoteList.some(function(r){ return r && r.id === p.id; });
+  });
+  lastRemoteSnapshot = snap;
+  personas = mergePersonas(remoteList);
+  localStorage.setItem('eco_carbon_personas', JSON.stringify(personas));
+  if (hadLocalOnly) pushAllProfiles(); // migrate this device's local profiles up, once
+  renderPersonaPills();
+  renderComparisonView();
+  if (!document.getElementById('addPersonModal').classList.contains('open')) {
+    loadPersonIntoForm(activePersonId);
+  }
+  runSimulation();
+}
+
+function initSync() {
+  if (!FIREBASE_CONFIG) return;
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    firebase.auth().onAuthStateChanged(function(u) {
+      syncUid = u ? u.uid : null;
+      // Only push after the first server snapshot arrives, so stale local data can never
+      // overwrite the cloud (e.g. a profile deleted on another device).
+      if (syncUid && gotFirstRemote) { pushPending = false; pushAllProfiles(); } // own + unsynced-local only; foreign-owned skipped
+      loadPersonIntoForm(activePersonId); // refresh view-only/editable state
+    });
+    firebase.auth().signInAnonymously().catch(function(){});
+    syncDb = firebase.database();
+    syncDb.ref('eco_carbon/personas').on('value', function(snap) {
+      const val = snap.val() || {};
+      Object.keys(val).forEach(function(k){ if (val[k] && val[k].deleted) knownDeleted[k] = true; });
+      const firstSnapshot = !gotFirstRemote;
+      gotFirstRemote = true;
+      applyRemote(Object.values(val));
+      if (firstSnapshot && syncUid && pushPending) { pushPending = false; pushAllProfiles(); }
+    });
+  } catch(e) { syncDb = null; }
+}
+
+// Initialise Local Storage or Default
+function initApp() {
+  const saved = localStorage.getItem('eco_carbon_personas');
+  if (saved) {
+    try {
+      personas = JSON.parse(saved);
+    } catch(e) {
+      personas = JSON.parse(JSON.stringify(DEFAULT_PERSONAS));
+    }
+  } else {
+    personas = JSON.parse(JSON.stringify(DEFAULT_PERSONAS));
+    saveToStorage();
+  }
+
+  initSync();
+
+  renderPersonaPills();
+  loadPersonIntoForm(activePersonId);
+  renderComparisonView();
+  runSimulation();
+}
+
+function saveToStorage() {
+  localStorage.setItem('eco_carbon_personas', JSON.stringify(personas));
+  lastRemoteSnapshot = canonSnap(personas);
+  schedulePush();
+}
+
+function loadSamplePersonas() {
+  personas = JSON.parse(JSON.stringify(DEFAULT_PERSONAS));
+  activePersonId = 'p1';
+  saveToStorage();
+  renderPersonaPills();
+  loadPersonIntoForm(activePersonId);
+  renderComparisonView();
+  runSimulation();
+  alert('Default personas reloaded!');
+}
+
+// ==========================================
+// CALCULATOR CORE ENGINE
+// ==========================================
+const FACTORS = {
+  car: 0.18,        // kg CO2e / km
+  bike: 0.07,       // kg CO2e / km
+  public: 0.04,     // kg CO2e / km
+  flight: 90.0,     // kg CO2e / hour (divided by 12 for monthly)
+  elec: 0.70,       // kg CO2e / kWh
+  lpg: 42.5         // kg CO2e / cylinder
+};
+
+function calculatePersonEmissions(p) {
+  const transport = (p.car * FACTORS.car) +
+                    (p.bike * FACTORS.bike) +
+                    (p.public * FACTORS.public) +
+                    ((p.flight * FACTORS.flight) / 12);
+
+  const electricity = (p.elec * FACTORS.elec) +
+                      (p.lpg * FACTORS.lpg);
+
+  const food = Number(p.diet);
+  const waste = Number(p.waste);
+
+  const monthlyTotal = transport + electricity + food + waste;
+  const annualTotalTonnes = (monthlyTotal * 12) / 1000;
+  const dailyKg = monthlyTotal / 30;
+
+  // Trees required: ~22 kg CO2 absorbed per tree per year
+  const treesNeeded = Math.round((annualTotalTonnes * 1000) / 22);
+
+  let grade = 'Low Impact';
+  let gradeClass = 'grade-green';
+  if (annualTotalTonnes > 5.0) {
+    grade = 'High Carbon Footprint';
+    gradeClass = 'grade-red';
+  } else if (annualTotalTonnes > 2.5) {
+    grade = 'Moderate Footprint';
+    gradeClass = 'grade-yellow';
+  }
+
+  return {
+    transport,
+    electricity,
+    food,
+    waste,
+    monthlyTotal,
+    annualTotalTonnes,
+    dailyKg,
+    treesNeeded,
+    grade,
+    gradeClass
+  };
+}
+
+// ==========================================
+// UI SYNCHRONIZATION
+// ==========================================
+function renderPersonaPills() {
+  const container = document.getElementById('personaPills');
+  container.innerHTML = personas.map(p => {
+    const isAct = p.id === activePersonId ? 'active' : '';
+    return `<button class="persona-chip ${isAct}" onclick="selectPersona('${p.id}')">
+      <span>${p.avatar || '👤'}</span>
+      <span>${p.name} (${p.role.split(' ')[0]})</span>
+    </button>`;
+  }).join('');
+}
+
+function selectPersona(id) {
+  activePersonId = id;
+  renderPersonaPills();
+  loadPersonIntoForm(id);
+  renderComparisonView();
+  runSimulation();
+}
+
+function loadPersonIntoForm(id) {
+  const p = personas.find(item => item.id === id) || personas[0];
+  if (!p) return;
+
+  document.getElementById('inputCar').value = p.car;
+  document.getElementById('numCar').value = p.car;
+  document.getElementById('dispCar').textContent = p.car + ' km';
+
+  document.getElementById('inputBike').value = p.bike;
+  document.getElementById('numBike').value = p.bike;
+  document.getElementById('dispBike').textContent = p.bike + ' km';
+
+  document.getElementById('inputPublic').value = p.public;
+  document.getElementById('numPublic').value = p.public;
+  document.getElementById('dispPublic').textContent = p.public + ' km';
+
+  document.getElementById('inputFlight').value = p.flight;
+  document.getElementById('numFlight').value = p.flight;
+  document.getElementById('dispFlight').textContent = p.flight + ' hrs';
+
+  document.getElementById('inputElec').value = p.elec;
+  document.getElementById('numElec').value = p.elec;
+  document.getElementById('dispElec').textContent = p.elec + ' kWh';
+
+  document.getElementById('inputLpg').value = p.lpg;
+  document.getElementById('numLpg').value = p.lpg;
+  document.getElementById('dispLpg').textContent = p.lpg + ' cyl';
+
+  document.getElementById('selectDiet').value = p.diet;
+  document.getElementById('selectWaste').value = p.waste;
+
+  document.getElementById('activeProfileLabel').textContent = `${p.name} (${p.role})`;
+  document.getElementById('currentProfileTag').textContent = p.name;
+  document.getElementById('heroPersonName').textContent = `${p.avatar || '👤'} ${p.name} (${p.role})`;
+  document.getElementById('simPersonName').textContent = `${p.name} (${p.role})`;
+
+  // Lock the form for profiles owned by another device
+  const editable = canEditProfile(p);
+  ['inputCar','numCar','inputBike','numBike','inputPublic','numPublic','inputFlight','numFlight',
+   'inputElec','numElec','inputLpg','numLpg','selectDiet','selectWaste'].forEach(function(elId){
+    const el = document.getElementById(elId);
+    if (el) el.disabled = !editable;
+  });
+  const saveBtn = document.getElementById('saveProfileBtn');
+  if (saveBtn) { saveBtn.disabled = !editable; saveBtn.style.opacity = editable ? '' : '0.45'; }
+  const note = document.getElementById('ownerNote');
+  if (note) note.style.display = editable ? 'none' : 'block';
+
+  updateCalculation();
+}
+
+function syncRange(rangeId, val) {
+  document.getElementById(rangeId).value = val;
+  updateCalculation();
+}
+
+function updateCalculation() {
+  const car = Math.max(0, parseFloat(document.getElementById('inputCar').value) || 0);
+  const bike = Math.max(0, parseFloat(document.getElementById('inputBike').value) || 0);
+  const pub = Math.max(0, parseFloat(document.getElementById('inputPublic').value) || 0);
+  const flight = Math.max(0, parseFloat(document.getElementById('inputFlight').value) || 0);
+  const elec = Math.max(0, parseFloat(document.getElementById('inputElec').value) || 0);
+  const lpg = Math.max(0, parseFloat(document.getElementById('inputLpg').value) || 0);
+  const diet = parseFloat(document.getElementById('selectDiet').value) || 140;
+  const waste = parseFloat(document.getElementById('selectWaste').value) || 20;
+
+  // Update displays
+  document.getElementById('dispCar').textContent = car + ' km';
+  document.getElementById('numCar').value = car;
+  document.getElementById('dispBike').textContent = bike + ' km';
+  document.getElementById('numBike').value = bike;
+  document.getElementById('dispPublic').textContent = pub + ' km';
+  document.getElementById('numPublic').value = pub;
+  document.getElementById('dispFlight').textContent = flight + ' hrs';
+  document.getElementById('numFlight').value = flight;
+  document.getElementById('dispElec').textContent = elec + ' kWh';
+  document.getElementById('numElec').value = elec;
+  document.getElementById('dispLpg').textContent = lpg + ' cyl';
+  document.getElementById('numLpg').value = lpg;
+
+  const currentObj = { car, bike, public: pub, flight, elec, lpg, diet, waste };
+  const res = calculatePersonEmissions(currentObj);
+
+  // Update KPI Cards
+  document.getElementById('kpiAnnual').innerHTML = `${res.annualTotalTonnes.toFixed(1)} <span style="font-size: 14px; font-weight: 600;">t</span>`;
+  document.getElementById('kpiMonthly').innerHTML = `${Math.round(res.monthlyTotal)} <span style="font-size: 14px; font-weight: 600;">kg</span>`;
+  document.getElementById('kpiDaily').innerHTML = `${res.dailyKg.toFixed(1)} <span style="font-size: 14px; font-weight: 600;">kg</span>`;
+  document.getElementById('heroTotalNum').textContent = res.annualTotalTonnes.toFixed(1);
+  document.getElementById('heroMonthlyStat').textContent = `${Math.round(res.monthlyTotal)} kg CO₂e`;
+  document.getElementById('donutCenterVal').textContent = Math.round(res.monthlyTotal);
+
+  // Offset Badge
+  document.getElementById('offsetTreesBadge').textContent = `🌳 ~${res.treesNeeded} Trees to Offset`;
+
+  // Eco-Grade Badge in Hero
+  const gradeBadge = document.getElementById('heroGradeBadge');
+  gradeBadge.className = `eco-grade-badge ${res.gradeClass}`;
+  gradeBadge.innerHTML = `<span>${res.annualTotalTonnes > 5 ? '⚠️' : (res.annualTotalTonnes > 2.5 ? '🌿' : '🌱')}</span> Eco-Rating: ${res.grade}`;
+
+  // Donut SVG Calculations
+  const circ = 2 * Math.PI * 37; // ~232.47
+  const tot = res.monthlyTotal || 1;
+  const pTrans = res.transport / tot;
+  const pElec = res.electricity / tot;
+  const pFood = res.food / tot;
+  const pWaste = res.waste / tot;
+
+  const lenTrans = pTrans * circ;
+  const lenElec = pElec * circ;
+  const lenFood = pFood * circ;
+  const lenWaste = pWaste * circ;
+
+  const segTrans = document.getElementById('donutSegmentTransport');
+  const segElec = document.getElementById('donutSegmentElec');
+  const segFood = document.getElementById('donutSegmentFood');
+  const segWaste = document.getElementById('donutSegmentWaste');
+
+  segTrans.style.strokeDasharray = `${lenTrans} ${circ}`;
+  segTrans.style.strokeDashoffset = '0';
+
+  segElec.style.strokeDasharray = `${lenElec} ${circ}`;
+  segElec.style.strokeDashoffset = `-${lenTrans}`;
+
+  segFood.style.strokeDasharray = `${lenFood} ${circ}`;
+  segFood.style.strokeDashoffset = `-${lenTrans + lenElec}`;
+
+  segWaste.style.strokeDasharray = `${lenWaste} ${circ}`;
+  segWaste.style.strokeDashoffset = `-${lenTrans + lenElec + lenFood}`;
+
+  // Update Legend Values & Pct
+  document.getElementById('legendValTransport').textContent = `${res.transport.toFixed(1)} kg`;
+  document.getElementById('legendPctTransport').textContent = `${Math.round(pTrans * 100)}%`;
+
+  document.getElementById('legendValElec').textContent = `${res.electricity.toFixed(1)} kg`;
+  document.getElementById('legendPctElec').textContent = `${Math.round(pElec * 100)}%`;
+
+  document.getElementById('legendValFood').textContent = `${res.food.toFixed(1)} kg`;
+  document.getElementById('legendPctFood').textContent = `${Math.round(pFood * 100)}%`;
+
+  document.getElementById('legendValWaste').textContent = `${res.waste.toFixed(1)} kg`;
+  document.getElementById('legendPctWaste').textContent = `${Math.round(pWaste * 100)}%`;
+
+  // Determine top category
+  const cats = [
+    { name: 'Transport & Travel', val: res.transport, pct: pTrans * 100 },
+    { name: 'Electricity & Energy', val: res.electricity, pct: pElec * 100 },
+    { name: 'Diet & Food', val: res.food, pct: pFood * 100 },
+    { name: 'Waste & Goods', val: res.waste, pct: pWaste * 100 }
+  ];
+  cats.sort((a,b) => b.val - a.val);
+  document.getElementById('heroTopCategory').textContent = `${cats[0].name} (${Math.round(cats[0].pct)}%)`;
+
+  // Render Category Bars
+  const barsContainer = document.getElementById('categoryBarsContainer');
+  barsContainer.innerHTML = cats.map(c => `
+    <div>
+      <div class="bar-row-info">
+        <span>${c.name}</span>
+        <b>${c.val.toFixed(1)} kg/mo (${Math.round(c.pct)}%)</b>
+      </div>
+      <div class="bar-track">
+        <div class="bar-fill" style="width: ${Math.min(100, c.pct)}%; background: ${getCategoryColor(c.name)};"></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Benchmark Pin (Scale: 0 to 10 tonnes = 0% to 100%)
+  const pinPercent = Math.min(95, Math.max(5, (res.annualTotalTonnes / 10) * 100));
+  const userPin = document.getElementById('benchmarkUserPin');
+  userPin.style.left = `${pinPercent}%`;
+  userPin.textContent = `You: ${res.annualTotalTonnes.toFixed(1)} t`;
+
+  // Benchmark statement
+  let compText = '';
+  if (res.annualTotalTonnes <= 1.9) {
+    compText = `🌿 <b>Great!</b> Your footprint is below the Indian National Average (1.9 t) and meets the Paris Climate Agreement target.`;
+  } else if (res.annualTotalTonnes <= 4.7) {
+    compText = `⚠️ Your footprint is above the Indian National Average (1.9 t), but below the World Average (4.7 t). Transportation and energy efficiency can lower it.`;
+  } else {
+    compText = `🚨 <b>High Impact:</b> Your footprint exceeds the Global Average (4.7 t). Substantial reductions in car travel and energy consumption are recommended.`;
+  }
+  document.getElementById('benchmarkExplainText').innerHTML = compText;
+
+  // Recommendations Generation
+  renderRecommendations(cats[0].name, res);
+}
+
+function getCategoryColor(name) {
+  if (name.includes('Transport')) return 'var(--transport)';
+  if (name.includes('Electricity')) return 'var(--electricity)';
+  if (name.includes('Diet')) return 'var(--food)';
+  return 'var(--waste)';
+}
+
+function renderRecommendations(topCat, res) {
+  const container = document.getElementById('recsContainer');
+  const tips = [
+    {
+      cat: 'Transport & Travel',
+      icon: '🚆',
+      title: 'Shift to Public Transit or Metro',
+      desc: 'Replacing solo car trips with the metro or bus for just 3 days a week cuts transport emissions by up to 55%.',
+      save: `${Math.round(res.transport * 0.45)} kg/mo`,
+      badge: 'High Impact',
+      badgeClass: 'level-easy'
+    },
+    {
+      cat: 'Electricity & Energy',
+      icon: '❄️',
+      title: 'Optimize Air Conditioner to 25°C',
+      desc: 'Each degree higher on your AC thermostat saves approximately 6% of electrical power, directly slashing utility bills.',
+      save: `${Math.round(res.electricity * 0.20)} kg/mo`,
+      badge: 'Easy Habit',
+      badgeClass: 'level-easy'
+    },
+    {
+      cat: 'Diet & Food',
+      icon: '🥗',
+      title: 'Incorporate Plant-Rich Meals',
+      desc: 'Substituting one meat meal with lentils, beans, or vegetables drastically curbs upstream methane and land-use footprints.',
+      save: `${Math.round(res.food * 0.25)} kg/mo`,
+      badge: 'Medium Effort',
+      badgeClass: 'level-med'
+    },
+    {
+      cat: 'Waste & Goods',
+      icon: '♻️',
+      title: 'Refuse Single-Use Packaging',
+      desc: 'Carry reusable bags, bottles, and opt for consolidated shipping orders to minimize packaging waste.',
+      save: `${Math.round(res.waste * 0.35)} kg/mo`,
+      badge: 'Quick Win',
+      badgeClass: 'level-easy'
+    }
+  ];
+
+  // Put top category first
+  tips.sort((a,b) => (a.cat === topCat ? -1 : 1));
+
+  container.innerHTML = tips.map(t => `
+    <div class="rec-card">
+      <div>
+        <div class="rec-top">
+          <div class="rec-icon">${t.icon}</div>
+          <h4>${t.title}</h4>
+        </div>
+        <p>${t.desc}</p>
+      </div>
+      <div class="rec-foot">
+        <span class="rec-save">Potential saving: ~${t.save}</span>
+        <span class="badge-level ${t.badgeClass}">${t.badge}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function saveCurrentProfileEdits() {
+  const p = personas.find(item => item.id === activePersonId);
+  if (!p) return;
+
+  p.car = parseFloat(document.getElementById('inputCar').value) || 0;
+  p.bike = parseFloat(document.getElementById('inputBike').value) || 0;
+  p.public = parseFloat(document.getElementById('inputPublic').value) || 0;
+  p.flight = parseFloat(document.getElementById('inputFlight').value) || 0;
+  p.elec = parseFloat(document.getElementById('inputElec').value) || 0;
+  p.lpg = parseFloat(document.getElementById('inputLpg').value) || 0;
+  p.diet = parseFloat(document.getElementById('selectDiet').value) || 140;
+  p.waste = parseFloat(document.getElementById('selectWaste').value) || 20;
+
+  saveToStorage();
+  renderComparisonView();
+  runSimulation();
+  alert(`Saved changes to ${p.name}'s profile!`);
+}
+
+function resetCurrentForm() {
+  loadPersonIntoForm(activePersonId);
+}
+
+// ==========================================
+// PERSON-WISE COMPARISON TAB
+// ==========================================
+function renderComparisonView() {
+  const cardsGrid = document.getElementById('personasCardsGrid');
+  const tbody = document.getElementById('comparisonTableBody');
+
+  // Render Profile Cards
+  cardsGrid.innerHTML = personas.map(p => {
+    const res = calculatePersonEmissions(p);
+    const isSel = p.id === activePersonId ? 'selected' : '';
+    return `
+      <div class="person-profile-card ${isSel}" onclick="selectPersona('${p.id}')">
+        <span class="badge-level ${res.gradeClass} person-badge-top">${res.annualTotalTonnes.toFixed(1)} t/yr</span>
+        <div class="person-avatar">${p.avatar || '👤'}</div>
+        <div class="person-name">${p.name}</div>
+        <div class="person-role">${p.role}</div>
+
+        <div class="person-metrics-mini">
+          <div>
+            <div class="lbl">Monthly Footprint</div>
+            <div class="num">${Math.round(res.monthlyTotal)} kg</div>
+          </div>
+          <div>
+            <div class="lbl">Trees to Offset</div>
+            <div class="num" style="color: var(--primary);">🌳 ${res.treesNeeded}</div>
+          </div>
+        </div>
+
+        <div class="person-breakdown-tags">
+          <span class="tag-pill">🚗 ${Math.round(res.transport)} kg</span>
+          <span class="tag-pill">⚡ ${Math.round(res.electricity)} kg</span>
+          <span class="tag-pill">🥗 ${Math.round(res.food)} kg</span>
+          <span class="tag-pill">🛍️ ${Math.round(res.waste)} kg</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  // Render Table Rows
+  tbody.innerHTML = personas.map(p => {
+    const res = calculatePersonEmissions(p);
+    const isHighlight = p.id === activePersonId ? 'highlight-row' : '';
+    return `
+      <tr class="${isHighlight}">
+        <td>
+          <div style="font-weight: 800; color: var(--dark);">${p.avatar || '👤'} ${p.name}</div>
+          <div style="font-size: 11px; color: var(--muted);">${p.role}</div>
+        </td>
+        <td>${res.transport.toFixed(1)}</td>
+        <td>${res.electricity.toFixed(1)}</td>
+        <td>${res.food.toFixed(1)}</td>
+        <td>${res.waste.toFixed(1)}</td>
+        <td class="val-bold">${Math.round(res.monthlyTotal)} kg</td>
+        <td class="val-bold" style="color: var(--primary); font-size: 15px;">${res.annualTotalTonnes.toFixed(1)} t</td>
+        <td>🌳 ${res.treesNeeded}</td>
+        <td><span class="badge-level ${res.gradeClass}">${res.grade}</span></td>
+        <td>
+          <button class="btn btn-sm secondary" onclick="event.stopPropagation(); selectPersona('${p.id}'); switchTab('calculator');">Load ↗</button>
+          ${(personas.length > 1 && canEditProfile(p)) ? `<button class="btn btn-sm secondary" style="color: #f87171;" onclick="event.stopPropagation(); deletePerson('${p.id}')">✕</button>` : ''}
+        </td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function deletePerson(id) {
+  const p = personas.find(item => item.id === id);
+  if (!p) return;
+  if (isCustomProfile(p) && p.owner && p.owner !== syncUid) {
+    showSyncToast('You can only delete profiles created on this device.');
+    return;
+  }
+  if (confirm('Are you sure you want to remove this profile?')) {
+    if (isCustomProfile(p) && syncDb) {
+      p.deleted = true;  // soft-delete: propagates to all devices, no resurrection
+      pushProfile(p);
+    }
+    personas = personas.filter(x => x.id !== id);
+    if (activePersonId === id && personas.length > 0) {
+      activePersonId = personas[0].id;
+    }
+    saveToStorage();
+    renderPersonaPills();
+    loadPersonIntoForm(activePersonId);
+    renderComparisonView();
+  }
+}
+
+// ==========================================
+// SIMULATOR LOGIC
+// ==========================================
+function runSimulation() {
+  const p = personas.find(item => item.id === activePersonId) || personas[0];
+  if (!p) return;
+
+  const baseline = calculatePersonEmissions(p);
+
+  // Levers
+  const shiftMetroPct = parseFloat(document.getElementById('simShiftMetro').value) || 0;
+  document.getElementById('simValMetro').textContent = `${shiftMetroPct}% Shift`;
+
+  const cutElecPct = parseFloat(document.getElementById('simCutElec').value) || 0;
+  document.getElementById('simValElec').textContent = `${cutElecPct}% Cut`;
+
+  const dietChoice = document.getElementById('simDietShift').value;
+  const wasteChoice = parseFloat(document.getElementById('simWasteReduction').value) || 0;
+
+  // Calculate new simulated profile
+  let simCar = p.car * (1 - (shiftMetroPct / 100));
+  let simPub = p.public + (p.car * (shiftMetroPct / 100)); // shift km to metro
+  let simElec = p.elec * (1 - (cutElecPct / 100));
+  let simDiet = p.diet;
+  if (dietChoice === 'vegetarian') simDiet = 140;
+  else if (dietChoice === 'vegan') simDiet = 100;
+
+  let simWaste = p.waste * (1 - (wasteChoice / 100));
+
+  const simObj = {
+    car: simCar,
+    bike: p.bike,
+    public: simPub,
+    flight: p.flight,
+    elec: simElec,
+    lpg: p.lpg,
+    diet: simDiet,
+    waste: simWaste
+  };
+
+  const simRes = calculatePersonEmissions(simObj);
+
+  const baselineAnnualKg = baseline.annualTotalTonnes * 1000;
+  const simAnnualKg = simRes.annualTotalTonnes * 1000;
+  const savedKg = Math.max(0, baselineAnnualKg - simAnnualKg);
+  const pctCut = baselineAnnualKg > 0 ? (savedKg / baselineAnnualKg) * 100 : 0;
+  const treesSaved = Math.round(savedKg / 22);
+
+  document.getElementById('simSavedKg').textContent = `-${Math.round(savedKg).toLocaleString()} kg`;
+  document.getElementById('simBaselineVal').textContent = `${baseline.annualTotalTonnes.toFixed(1)} tonnes / yr`;
+  document.getElementById('simNewVal').textContent = `${simRes.annualTotalTonnes.toFixed(1)} tonnes / yr`;
+  document.getElementById('simPctVal').textContent = `-${pctCut.toFixed(1)}%`;
+}
+
+// ==========================================
+// MODAL: ADD NEW PERSON
+// ==========================================
+function openAddPersonModal() {
+  document.getElementById('addPersonModal').classList.add('open');
+}
+
+function closeAddPersonModal() {
+  document.getElementById('addPersonModal').classList.remove('open');
+}
+
+function populateTemplateValues(template) {
+  if (template === 'student') {
+    document.getElementById('mCar').value = 0;
+    document.getElementById('mBike').value = 30;
+    document.getElementById('mPublic').value = 150;
+    document.getElementById('mElec').value = 45;
+    document.getElementById('mDiet').value = 140;
+    document.getElementById('mWaste').value = 20;
+  } else if (template === 'commuter') {
+    document.getElementById('mCar').value = 80;
+    document.getElementById('mBike').value = 50;
+    document.getElementById('mPublic').value = 220;
+    document.getElementById('mElec').value = 120;
+    document.getElementById('mDiet').value = 180;
+    document.getElementById('mWaste').value = 45;
+  } else if (template === 'executive') {
+    document.getElementById('mCar').value = 650;
+    document.getElementById('mBike').value = 0;
+    document.getElementById('mPublic').value = 30;
+    document.getElementById('mElec').value = 300;
+    document.getElementById('mDiet').value = 250;
+    document.getElementById('mWaste').value = 85;
+  } else if (template === 'family') {
+    document.getElementById('mCar').value = 300;
+    document.getElementById('mBike').value = 100;
+    document.getElementById('mPublic').value = 100;
+    document.getElementById('mElec').value = 180;
+    document.getElementById('mDiet').value = 180;
+    document.getElementById('mWaste').value = 45;
+  }
+}
+
+function handleCreatePerson(e) {
+  e.preventDefault();
+  const name = document.getElementById('newPersonName').value.trim();
+  if (!name) return;
+
+  const newId = 'p_' + Date.now();
+  const newProfile = {
+    id: newId,
+    name: name,
+    role: 'Custom Person Profile',
+    avatar: '👤',
+    car: parseFloat(document.getElementById('mCar').value) || 0,
+    bike: parseFloat(document.getElementById('mBike').value) || 0,
+    public: parseFloat(document.getElementById('mPublic').value) || 0,
+    flight: 0,
+    elec: parseFloat(document.getElementById('mElec').value) || 0,
+    lpg: 0.5,
+    diet: parseFloat(document.getElementById('mDiet').value) || 140,
+    waste: parseFloat(document.getElementById('mWaste').value) || 45
+  };
+
+  personas.push(newProfile);
+  activePersonId = newId;
+  saveToStorage();
+
+  closeAddPersonModal();
+  renderPersonaPills();
+  loadPersonIntoForm(newId);
+  renderComparisonView();
+  switchTab('comparison');
+  alert(`Created profile for ${name}!`);
+}
+
+
+// ==========================================
+// PDF REPORT DOWNLOAD
+// ==========================================
+function getSelectLabel(id) {
+  const el = document.getElementById(id);
+  if (!el || !el.selectedOptions || !el.selectedOptions[0]) return '';
+  return el.selectedOptions[0].textContent.trim();
+}
+
+// Builds a two-page, A4-proportioned (794x1123) dark-themed report from live app state
+function buildReportElement() {
+  const car = Math.max(0, parseFloat(document.getElementById('inputCar').value) || 0);
+  const bike = Math.max(0, parseFloat(document.getElementById('inputBike').value) || 0);
+  const pub = Math.max(0, parseFloat(document.getElementById('inputPublic').value) || 0);
+  const flight = Math.max(0, parseFloat(document.getElementById('inputFlight').value) || 0);
+  const elec = Math.max(0, parseFloat(document.getElementById('inputElec').value) || 0);
+  const lpg = Math.max(0, parseFloat(document.getElementById('inputLpg').value) || 0);
+  const diet = parseFloat(document.getElementById('selectDiet').value) || 140;
+  const waste = parseFloat(document.getElementById('selectWaste').value) || 20;
+
+  const currentObj = { car, bike, public: pub, flight, elec, lpg, diet, waste };
+  const res = calculatePersonEmissions(currentObj);
+
+  const p = personas.find(item => item.id === activePersonId) || personas[0] || { name: 'Individual', role: '' };
+  const tot = res.monthlyTotal || 1;
+  const cats = [
+    { name: 'Transport & Travel', val: res.transport, color: '#38bdf8' },
+    { name: 'Electricity & Energy', val: res.electricity, color: '#fbbf24' },
+    { name: 'Diet & Food', val: res.food, color: '#4ade80' },
+    { name: 'Waste & Goods', val: res.waste, color: '#f472b6' }
+  ].sort((a,b) => b.val - a.val);
+
+  // Pull the live recommendation cards so the PDF matches what is on screen
+  const recs = [];
+  document.querySelectorAll('#recsContainer .rec-card').forEach(card => {
+    const title = (card.querySelector('h4') || {}).textContent || '';
+    const desc = (card.querySelector('p') || {}).textContent || '';
+    const save = (card.querySelector('.rec-save') || {}).textContent || '';
+    const badge = (card.querySelector('.badge-level') || {}).textContent || '';
+    if (title) recs.push({ title, desc, save, badge });
+  });
+
+  let benchText = '';
+  if (res.annualTotalTonnes <= 1.9) {
+    benchText = 'Great! This footprint is below the Indian National Average (1.9 t) and meets the Paris Climate Agreement target.';
+  } else if (res.annualTotalTonnes <= 4.7) {
+    benchText = 'This footprint is above the Indian National Average (1.9 t), but below the World Average (4.7 t). Transportation and energy efficiency can lower it.';
+  } else {
+    benchText = 'High Impact: this footprint exceeds the Global Average (4.7 t). Substantial reductions in car travel and energy consumption are recommended.';
+  }
+
+  const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Theme tokens (match site: black bg, neon green accents)
+  const BG = '#060b08', CARD = '#0c140f', BORDER = '#1d3324', TXT = '#e8f4ec', MUT = '#9db5a5',
+        GRN = '#4ade80', DGRN = '#16a34a', DARKTXT = '#052e10';
+  const font = 'font-family:"Plus Jakarta Sans", Arial, sans-serif;';
+  const pageCss = `width:794px; height:1123px; box-sizing:border-box; background:${BG}; color:${TXT}; ${font} padding:44px 48px; position:relative; overflow:hidden;`;
+  const secTitle = `font-size:15px; font-weight:800; color:${GRN}; letter-spacing:1.2px; text-transform:uppercase; margin:0 0 10px;`;
+  const cardBox = `background:${CARD}; border:1px solid ${BORDER}; border-radius:12px;`;
+  const thC = `border:1px solid ${BORDER}; background:#122016; color:${GRN}; padding:8px 10px; text-align:left; font-size:11.5px;`;
+  const tdC = `border:1px solid ${BORDER}; padding:8px 10px; font-size:12px; color:${TXT};`;
+  const footer = (n) => `
+    <div style="position:absolute; left:48px; right:48px; bottom:26px; border-top:1px solid ${BORDER}; padding-top:10px; display:flex; justify-content:space-between; font-size:10.5px; color:${MUT};">
+      <span>Reduce Your Carbon Footprint, Save Our Planet</span>
+      <span>Page ${n} of 2</span>
+    </div>`;
+
+  // Donut chart (same style as the site dashboard) with live category shares
+  const R = 64, CIRC = 2 * Math.PI * R;
+  let donutOffset = 0;
+  const donutSegs = cats.map(c => {
+    const frac = c.val / tot;
+    const len = Math.max(0, frac * CIRC - 2); // small gap between segments
+    const seg = `<circle cx="90" cy="90" r="${R}" fill="none" stroke="${c.color}" stroke-width="24"
+      stroke-dasharray="${len.toFixed(1)} ${CIRC.toFixed(1)}" stroke-dashoffset="${(-donutOffset).toFixed(1)}"
+      transform="rotate(-90 90 90)"/>`;
+    donutOffset += frac * CIRC;
+    return seg;
+  }).join('');
+  const donutSvg = `
+    <svg width="180" height="180" viewBox="0 0 180 180">
+      <circle cx="90" cy="90" r="${R}" fill="none" stroke="#18251c" stroke-width="24"/>
+      ${donutSegs}
+      <text x="90" y="86" text-anchor="middle" fill="${TXT}" font-size="26" font-weight="800" font-family="Plus Jakarta Sans, Arial">${Math.round(res.monthlyTotal)}</text>
+      <text x="90" y="106" text-anchor="middle" fill="${MUT}" font-size="11" font-family="Plus Jakarta Sans, Arial">kg CO&#8322;e / mo</text>
+    </svg>`;
+  const donutLegend = cats.map(c => {
+    const pct = Math.round((c.val / tot) * 100);
+    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid ${BORDER}; font-size:12px;">
+      <span><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:${c.color}; margin-right:8px;"></span>${c.name}</span>
+      <b>${c.val.toFixed(1)} kg <span style="color:${MUT}; font-weight:600;">(${pct}%)</span></b>
+    </div>`;
+  }).join('');
+
+  const wrap = document.createElement('div');
+  wrap.id = 'pdfReportSource';
+  wrap.style.cssText = 'position:absolute; left:-10000px; top:0;';
+
+  const leafSvg = `<svg width="22" height="22" viewBox="0 0 24 24" style="vertical-align:-4px;"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#22c55e"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#bbf7d0" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>`;
+
+  wrap.innerHTML = `
+  <div class="pdf-page" style="${pageCss}">
+    <div style="border-bottom:2px solid ${DGRN}; padding-bottom:14px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-end;">
+      <div>
+        <div style="font-size:24px; font-weight:800; color:${TXT};">${leafSvg} Carbon Footprint <span style="color:${GRN};">Report</span></div>
+        <div style="font-size:11.5px; color:${MUT}; margin-top:5px;">Carbon Footprint Estimator &bull; Personal Sustainability Analysis</div>
+      </div>
+      <div style="text-align:right; font-size:11px; color:${MUT};">Report Date<br><b style="color:${TXT}; font-size:12.5px;">${dateStr}</b></div>
+    </div>
+
+    <div style="${secTitle}">Person Details</div>
+    <div style="${cardBox} padding:14px 18px; margin-bottom:20px;">
+      <table style="width:100%; border-collapse:collapse; font-size:12.5px;" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding:4px 0; width:50%;"><span style="color:${MUT};">Name:</span> <b>${esc(p.name)}</b></td>
+          <td style="padding:4px 0; width:50%;"><span style="color:${MUT};">Profile:</span> <b>${esc(p.role || 'Individual')}</b></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 0;"><span style="color:${MUT};">Eco-Rating:</span> <span style="display:inline-block; font-weight:700; color:${DARKTXT}; background:${GRN}; border-radius:12px; padding:2px 12px; font-size:11.5px;">${esc(res.grade)}</span></td>
+          <td style="padding:4px 0;"><span style="color:${MUT};">Offset Needed:</span> <b style="color:${GRN};">~${res.treesNeeded} trees / year</b></td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="${secTitle}">Footprint Summary</div>
+    <table style="width:100%; border-collapse:separate; border-spacing:8px 0; margin:0 -8px 20px;" cellpadding="0" cellspacing="0">
+      <tr>
+        ${[
+          ['Annual Footprint', res.annualTotalTonnes.toFixed(1) + ' t'],
+          ['Monthly Footprint', Math.round(res.monthlyTotal) + ' kg'],
+          ['Daily Average', res.dailyKg.toFixed(1) + ' kg'],
+          ['Top Contributor', cats[0].name.split(' &')[0]]
+        ].map(k => `
+        <td style="width:25%; ${cardBox} padding:14px 10px; text-align:center;">
+          <div style="font-size:${k[0]==='Top Contributor' ? '15px' : '21px'}; font-weight:800; color:${GRN};">${k[1]}</div>
+          <div style="font-size:10.5px; color:${MUT}; margin-top:4px;">${k[0]}</div>
+        </td>`).join('')}
+      </tr>
+    </table>
+
+    <div style="${secTitle}">Lifestyle Inputs (per month)</div>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;" cellpadding="0" cellspacing="0">
+      <tr>
+        <th style="${thC}">Car travel</th><th style="${thC}">Two-wheeler</th><th style="${thC}">Public transport</th>
+        <th style="${thC}">Flights</th><th style="${thC}">Electricity</th><th style="${thC}">LPG</th>
+      </tr>
+      <tr>
+        <td style="${tdC}">${car} km</td><td style="${tdC}">${bike} km</td><td style="${tdC}">${pub} km</td>
+        <td style="${tdC}">${flight} hrs</td><td style="${tdC}">${elec} kWh</td><td style="${tdC}">${lpg} cylinders</td>
+      </tr>
+    </table>
+    <div style="${cardBox} padding:12px 16px; font-size:12px; margin-bottom:20px;">
+      <span style="color:${MUT};">Diet:</span> ${esc(getSelectLabel('selectDiet'))}<br>
+      <span style="color:${MUT};">Waste &amp; shopping:</span> ${esc(getSelectLabel('selectWaste'))}
+    </div>
+
+    <div style="${secTitle}">How Does This Compare?</div>
+    <div style="${cardBox} padding:14px 18px;">
+      <div style="font-size:12.5px; line-height:1.55;">${benchText}</div>
+      <table style="width:100%; border-collapse:collapse; margin-top:12px; font-size:11.5px;" cellpadding="0" cellspacing="0">
+        <tr>
+          <th style="${thC}">Benchmark</th><th style="${thC}">CO&#8322;e / person / year</th><th style="${thC}">vs This Footprint</th>
+        </tr>
+        ${[
+          ['Paris Climate Target', 2.0, '#4ade80'],
+          ['India National Average', 1.9, '#fbbf24'],
+          ['World Average', 4.7, '#f87171']
+        ].map(b => {
+          const diff = res.annualTotalTonnes - b[1];
+          const cmp = Math.abs(diff) < 0.05 ? 'Same level' : (diff > 0 ? diff.toFixed(1) + ' t above' : Math.abs(diff).toFixed(1) + ' t below');
+          return `<tr><td style="${tdC}"><span style="color:${b[2]}; font-weight:700;">&#9679;</span> ${b[0]}</td><td style="${tdC}">${b[1].toFixed(1)} t</td><td style="${tdC}">${cmp}</td></tr>`;
+        }).join('')}
+      </table>
+    </div>
+    ${footer(1)}
+  </div>
+
+  <div class="pdf-page" style="${pageCss} page-break-before:always;">
+    <div style="border-bottom:2px solid ${DGRN}; padding-bottom:12px; margin-bottom:20px;">
+      <div style="font-size:17px; font-weight:800; color:${TXT};">${leafSvg} ${esc(p.name)} <span style="color:${MUT}; font-weight:600; font-size:12px;">&bull; Detailed Analysis</span></div>
+    </div>
+
+    <div style="${secTitle}">Category Contribution</div>
+    <div style="${cardBox} padding:12px 18px; margin-bottom:14px; display:flex; align-items:center; gap:24px;">
+      <div style="flex:0 0 180px;">${donutSvg}</div>
+      <div style="flex:1;">${donutLegend}</div>
+    </div>
+
+    <div style="${secTitle}">Emissions Breakdown</div>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;" cellpadding="0" cellspacing="0">
+      <tr>
+        <th style="${thC}">Category</th><th style="${thC}">Emissions</th><th style="${thC}">Share</th><th style="${thC} width:40%;">Proportion</th>
+      </tr>
+      ${cats.map(c => {
+        const pct = (c.val / tot) * 100;
+        return `<tr>
+          <td style="${tdC}">${c.name}</td>
+          <td style="${tdC}">${c.val.toFixed(1)} kg/mo</td>
+          <td style="${tdC}">${Math.round(pct)}%</td>
+          <td style="${tdC}"><div style="background:#18251c; border-radius:4px; height:10px; width:100%;"><div style="background:${c.color}; height:10px; border-radius:4px; width:${Math.min(100, Math.max(3, pct))}%;"></div></div></td>
+        </tr>`;
+      }).join('')}
+      <tr>
+        <td style="${tdC} font-weight:800; color:${GRN};">Total</td>
+        <td style="${tdC} font-weight:800; color:${GRN};">${Math.round(res.monthlyTotal)} kg/mo</td>
+        <td style="${tdC} font-weight:800; color:${GRN};">100%</td>
+        <td style="${tdC}"></td>
+      </tr>
+    </table>
+
+    <div style="${secTitle}">Tailored Reduction Recommendations</div>
+    ${recs.map((r, i) => `
+      <div style="${cardBox} border-left:4px solid ${DGRN}; padding:9px 14px; margin-bottom:7px;">
+        <div style="font-size:13px; font-weight:700; color:${TXT};">${i+1}. ${esc(r.title)}
+          <span style="font-size:10px; font-weight:700; color:${DARKTXT}; background:${GRN}; border-radius:10px; padding:2px 9px; margin-left:8px;">${esc(r.badge)}</span>
+        </div>
+        <div style="font-size:11.5px; color:${MUT}; margin-top:4px; line-height:1.5;">${esc(r.desc)}</div>
+        <div style="font-size:11px; font-weight:700; color:${GRN}; margin-top:5px;">${esc(r.save)}</div>
+      </div>`).join('')}
+
+    <div style="${cardBox} margin-top:12px; padding:9px 14px; font-size:10.5px; color:${MUT}; line-height:1.5;">
+      Generated by Carbon Footprint Estimator from the current on-screen values for ${esc(p.name)}.
+      Emissions are estimates in CO&#8322;-equivalent based on standard emission factors.
+    </div>
+    ${footer(2)}
+  </div>`;
+
+  const pages = Array.from(wrap.querySelectorAll('.pdf-page'));
+  return { el: wrap, pages, name: p.name };
+}
+
+function downloadPDFReport() {
+  if (typeof html2canvas === 'undefined' || !window.jspdf || !window.jspdf.jsPDF) {
+    // CDN failed to load - fall back to the browser print dialog (Save as PDF)
+    window.print();
+    return;
+  }
+  const btn = document.getElementById('pdfReportBtn');
+  const originalHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating PDF...'; }
+
+  const built = buildReportElement();
+  document.body.appendChild(built.el);
+
+  const safeName = String(built.name || 'Report').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'Report';
+  const filename = `Carbon-Footprint-Report-${safeName}.pdf`;
+
+  function cleanup() {
+    if (built.el.parentNode) built.el.parentNode.removeChild(built.el);
+    if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+  }
+
+  // Render each fixed A4-ratio page div to its own PDF page: always exactly 2 pages
+  (async function() {
+    const jsPDF = window.jspdf.jsPDF;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    for (let i = 0; i < built.pages.length; i++) {
+      const canvas = await html2canvas(built.pages[i], { scale: 2, useCORS: true, backgroundColor: '#060b08', logging: false });
+      const img = canvas.toDataURL('image/jpeg', 0.95);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
+    }
+    pdf.save(filename);
+  })()
+    .catch(function(err) {
+      console.error('PDF generation failed', err);
+      window.print();
+    })
+    .finally(cleanup);
+}
+
+// ==========================================
+// TABS & QA COLLAPSE
+// ==========================================
+function switchTab(tabKey) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.nav-tab-btn').forEach(el => el.classList.remove('active'));
+
+  const activeContent = document.getElementById(`tab-${tabKey}`);
+  const activeBtn = document.getElementById(`tabBtn-${tabKey}`);
+
+  if (activeContent) activeContent.classList.add('active');
+  if (activeBtn) activeBtn.classList.add('active');
+
+  if (tabKey === 'comparison') {
+    renderComparisonView();
+  } else if (tabKey === 'simulator') {
+    runSimulation();
+  }
+}
+
+
+// Kickoff on load
+document.addEventListener('DOMContentLoaded', initApp);
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  initApp();
+}
+</script>
+<div id="syncToast"></div>
+</body>
+</html>
