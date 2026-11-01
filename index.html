@@ -964,6 +964,20 @@ footer {
   background: #ffffff;
 }
 
+/* Sync toast */
+#syncToast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
+  background: #1f2937; color: #f9fafb; padding: 10px 18px; border-radius: 12px;
+  font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none;
+  transition: all 0.25s ease; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  max-width: 90vw; text-align: center;
+}
+#syncToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+#ownerNote {
+  font-size: 12px; color: #92400e; background: #fef3c7; border: 1px solid #fde68a;
+  border-radius: 8px; padding: 6px 12px; margin-top: 10px; display: none;
+}
+
 /* Print Styling */
 @media print {
   header, .hero, .nav-tabs, .persona-pills-bar, .actions-bar, .btn {
@@ -1206,7 +1220,8 @@ footer {
           </div>
 
           <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-            <button class="btn" type="button" onclick="saveCurrentProfileEdits()">💾 Save Changes to Profile</button>
+            <button class="btn" type="button" id="saveProfileBtn" onclick="saveCurrentProfileEdits()">💾 Save Changes to Profile</button>
+            <div id="ownerNote">👀 View only - this profile was created on another device. Clone it to make your own copy.</div>
             <button class="btn secondary" type="button" onclick="openAddPersonModal()">👥 Clone to New Person</button>
           </div>
 
@@ -1646,6 +1661,9 @@ footer {
 </footer>
 
 <!-- Application Logic -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
 <script>
 // ==========================================
 // DATA STORE & DEFAULT PERSONAS
@@ -1712,6 +1730,117 @@ const DEFAULT_PERSONAS = [
 let personas = [];
 let activePersonId = 'p1';
 
+
+// ==========================================
+// CLOUD SYNC ENGINE (Firebase Realtime Database)
+// Cross-device person-wise profiles: public read, authenticated
+// per-profile writes (Firebase anonymous auth). localStorage stays
+// as the offline cache; without config the app works exactly as before.
+// ==========================================
+const FIREBASE_CONFIG = {apiKey:"AIzaSyBEUZAfmk-d1s79DtLE6U3o95KWHsTnd34",authDomain:"carbon-footprint-estimater.firebaseapp.com",databaseURL:"https://carbon-footprint-estimater-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"carbon-footprint-estimater",storageBucket:"carbon-footprint-estimater.firebasestorage.app",messagingSenderId:"412453988300",appId:"1:412453988300:web:58f8bfe99f97b3af585f69"};
+let syncDb = null;
+let syncUid = null;
+let lastRemoteSnapshot = null;
+let pushTimer = null;
+let pushPending = false;
+let gotFirstRemote = false;
+let knownDeleted = {}; // ids the server has tombstoned - never resurrect these
+
+function canonSnap(list) {
+  return JSON.stringify((list || []).map(function(p){
+    const o = {}; Object.keys(p).sort().forEach(function(k){ o[k] = p[k]; });
+    return o;
+  }));
+}
+
+// Merge by profile id: different profiles always merge additively;
+// the shared version wins per profile id (last write wins per profile).
+// Profiles marked deleted on the server are soft-deleted everywhere.
+function mergePersonas(remoteList) {
+  const map = {};
+  remoteList.forEach(function(p){ if (p && p.id) map[p.id] = p; });
+  personas.forEach(function(p){ if (p && p.id && !map[p.id]) map[p.id] = p; });
+  return Object.values(map).filter(function(p){ return !p.deleted; });
+}
+
+// Only custom profiles (created via "Add New Person") sync across devices.
+// Built-in sample personas stay local to each device and are never claimed.
+function isCustomProfile(p) { return !!(p && p.id && String(p.id).indexOf('p_') === 0); }
+function canEditProfile(p) {
+  if (!isCustomProfile(p)) return true;          // built-ins: local edit, unsynced
+  if (!p.owner) return true;                     // created here, not yet synced
+  return !!syncUid && p.owner === syncUid;       // synced: owner only
+}
+
+let toastTimer = null;
+function showSyncToast(msg) {
+  const t = document.getElementById('syncToast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 4000);
+}
+
+function pushProfile(p) {
+  if (!syncDb || !syncUid || !isCustomProfile(p)) return;
+  if (p.owner && p.owner !== syncUid) return; // never claim or overwrite someone else's profile
+  if (knownDeleted[p.id]) return; // tombstoned on the server (deleted on another device): never resurrect
+  p.owner = syncUid; // ownership stamp required by the security rules
+  syncDb.ref('eco_carbon/personas/' + p.id).set(p).catch(function() {
+    showSyncToast('Cloud save failed - changes are kept on this device only.');
+  });
+}
+function pushAllProfiles() { personas.forEach(function(p){ if (!p.deleted) pushProfile(p); }); }
+function schedulePush() {
+  if (!syncUid) { pushPending = true; }
+  clearTimeout(pushTimer);
+  pushTimer = setTimeout(pushAllProfiles, 800);
+}
+
+
+function applyRemote(remoteList) {
+  const snap = canonSnap(remoteList);
+  if (snap === lastRemoteSnapshot) return;
+  const hadLocalOnly = personas.some(function(p){
+    return isCustomProfile(p) && !p.owner && !remoteList.some(function(r){ return r && r.id === p.id; });
+  });
+  lastRemoteSnapshot = snap;
+  personas = mergePersonas(remoteList);
+  localStorage.setItem('eco_carbon_personas', JSON.stringify(personas));
+  if (hadLocalOnly) pushAllProfiles(); // migrate this device's local profiles up, once
+  renderPersonaPills();
+  renderComparisonView();
+  if (!document.getElementById('addPersonModal').classList.contains('open')) {
+    loadPersonIntoForm(activePersonId);
+  }
+  runSimulation();
+}
+
+function initSync() {
+  if (!FIREBASE_CONFIG) return;
+  try {
+    firebase.initializeApp(FIREBASE_CONFIG);
+    firebase.auth().onAuthStateChanged(function(u) {
+      syncUid = u ? u.uid : null;
+      // Only push after the first server snapshot arrives, so stale local data can never
+      // overwrite the cloud (e.g. a profile deleted on another device).
+      if (syncUid && gotFirstRemote) { pushPending = false; pushAllProfiles(); } // own + unsynced-local only; foreign-owned skipped
+      loadPersonIntoForm(activePersonId); // refresh view-only/editable state
+    });
+    firebase.auth().signInAnonymously().catch(function(){});
+    syncDb = firebase.database();
+    syncDb.ref('eco_carbon/personas').on('value', function(snap) {
+      const val = snap.val() || {};
+      Object.keys(val).forEach(function(k){ if (val[k] && val[k].deleted) knownDeleted[k] = true; });
+      const firstSnapshot = !gotFirstRemote;
+      gotFirstRemote = true;
+      applyRemote(Object.values(val));
+      if (firstSnapshot && syncUid && pushPending) { pushPending = false; pushAllProfiles(); }
+    });
+  } catch(e) { syncDb = null; }
+}
+
 // Initialise Local Storage or Default
 function initApp() {
   const saved = localStorage.getItem('eco_carbon_personas');
@@ -1726,6 +1855,8 @@ function initApp() {
     saveToStorage();
   }
 
+  initSync();
+
   renderPersonaPills();
   loadPersonIntoForm(activePersonId);
   renderComparisonView();
@@ -1734,6 +1865,8 @@ function initApp() {
 
 function saveToStorage() {
   localStorage.setItem('eco_carbon_personas', JSON.stringify(personas));
+  lastRemoteSnapshot = canonSnap(personas);
+  schedulePush();
 }
 
 function loadSamplePersonas() {
@@ -1859,6 +1992,18 @@ function loadPersonIntoForm(id) {
   document.getElementById('currentProfileTag').textContent = p.name;
   document.getElementById('heroPersonName').textContent = `${p.avatar || '👤'} ${p.name} (${p.role})`;
   document.getElementById('simPersonName').textContent = `${p.name} (${p.role})`;
+
+  // Lock the form for profiles owned by another device
+  const editable = canEditProfile(p);
+  ['inputCar','numCar','inputBike','numBike','inputPublic','numPublic','inputFlight','numFlight',
+   'inputElec','numElec','inputLpg','numLpg','selectDiet','selectWaste'].forEach(function(elId){
+    const el = document.getElementById(elId);
+    if (el) el.disabled = !editable;
+  });
+  const saveBtn = document.getElementById('saveProfileBtn');
+  if (saveBtn) { saveBtn.disabled = !editable; saveBtn.style.opacity = editable ? '' : '0.45'; }
+  const note = document.getElementById('ownerNote');
+  if (note) note.style.display = editable ? 'none' : 'block';
 
   updateCalculation();
 }
@@ -2149,7 +2294,7 @@ function renderComparisonView() {
         <td><span class="badge-level ${res.gradeClass}">${res.grade}</span></td>
         <td>
           <button class="btn btn-sm secondary" onclick="event.stopPropagation(); selectPersona('${p.id}'); switchTab('calculator');">Load ↗</button>
-          ${personas.length > 1 ? `<button class="btn btn-sm secondary" style="color: #dc2626;" onclick="event.stopPropagation(); deletePerson('${p.id}')">✕</button>` : ''}
+          ${(personas.length > 1 && canEditProfile(p)) ? `<button class="btn btn-sm secondary" style="color: #dc2626;" onclick="event.stopPropagation(); deletePerson('${p.id}')">✕</button>` : ''}
         </td>
       </tr>
     `;
@@ -2157,8 +2302,18 @@ function renderComparisonView() {
 }
 
 function deletePerson(id) {
+  const p = personas.find(item => item.id === id);
+  if (!p) return;
+  if (isCustomProfile(p) && p.owner && p.owner !== syncUid) {
+    showSyncToast('You can only delete profiles created on this device.');
+    return;
+  }
   if (confirm('Are you sure you want to remove this profile?')) {
-    personas = personas.filter(p => p.id !== id);
+    if (isCustomProfile(p) && syncDb) {
+      p.deleted = true;  // soft-delete: propagates to all devices, no resurrection
+      pushProfile(p);
+    }
+    personas = personas.filter(x => x.id !== id);
     if (activePersonId === id && personas.length > 0) {
       activePersonId = personas[0].id;
     }
@@ -2326,5 +2481,6 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
   initApp();
 }
 </script>
+<div id="syncToast"></div>
 </body>
 </html>
