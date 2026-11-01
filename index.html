@@ -9,44 +9,49 @@
 <title>Carbon Footprint Estimator | Person-Wise Analysis & Sustainability Dashboard</title>
 <style>
 :root {
-  --primary: #059669;
-  --primary-dark: #064e3b;
-  --primary-light: #34d399;
-  --accent: #0d9488;
-  --mint: #ecfdf5;
-  --mint-border: #a7f3d0;
-  --dark: #06281c;
-  --muted: #4b6354;
-  --bg: #eef5f0;
-  --card-bg: #ffffff;
-  --line: #e2ece5;
-  --shadow-sm: 0 2px 8px rgba(15, 41, 30, 0.04);
-  --shadow: 0 10px 30px rgba(15, 41, 30, 0.07);
-  --transport: #0284c7;
-  --electricity: #eab308;
-  --food: #10b981;
-  --waste: #8b5cf6;
-  --flight: #f97316;
+  --primary: #4ade80;
+  --primary-dark: #bbf7d0;
+  --primary-light: #86efac;
+  --accent: #22c55e;
+  --mint: rgba(74, 222, 128, 0.12);
+  --mint-border: rgba(74, 222, 128, 0.32);
+  --dark: #eaf6ee;
+  --muted: #a7bdaa;
+  --bg: #04070a;
+  --card-bg: rgba(13, 22, 17, 0.78);
+  --line: rgba(120, 200, 150, 0.14);
+  --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.35);
+  --shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
+  --transport: #38bdf8;
+  --electricity: #facc15;
+  --food: #4ade80;
+  --waste: #a78bfa;
+  --flight: #fb923c;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  background: linear-gradient(180deg, #e6f4ec 0%, #f4f9f6 40%, #eef5f0 100%) fixed;
-  color: #1e2922;
+  background:
+    radial-gradient(1100px 620px at 72% -12%, rgba(34, 197, 94, 0.10), transparent 60%),
+    radial-gradient(900px 540px at 6% 6%, rgba(56, 189, 248, 0.05), transparent 55%),
+    radial-gradient(800px 500px at 50% 110%, rgba(34, 197, 94, 0.06), transparent 60%),
+    #04070a;
+  background-attachment: fixed;
+  color: var(--dark);
   line-height: 1.6;
 }
 
 /* Header & Nav */
 header {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(4, 9, 7, 0.82);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--line);
   position: sticky;
   top: 0;
   z-index: 50;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  box-shadow: 0 2px 14px rgba(0,0,0,0.4);
 }
 .nav {
   max-width: 1220px;
@@ -61,26 +66,28 @@ header {
 .brand {
   font-weight: 800;
   font-size: 20px;
-  color: var(--primary-dark);
+  color: var(--dark);
   display: flex;
   align-items: center;
   gap: 10px;
   text-decoration: none;
 }
 .brand-icon {
-  background: var(--mint);
-  border: 1px solid var(--mint-border);
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.4);
   border-radius: 12px;
   width: 38px;
   height: 38px;
   display: grid;
   place-items: center;
   font-size: 20px;
+  box-shadow: 0 0 16px rgba(74, 222, 128, 0.18);
 }
 .nav-tabs {
   display: flex;
   gap: 6px;
-  background: #f0f5f1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(120, 200, 150, 0.12);
   padding: 4px;
   border-radius: 12px;
 }
@@ -99,21 +106,26 @@ header {
   gap: 6px;
 }
 .nav-tab-btn:hover {
-  color: var(--primary-dark);
-  background: rgba(255,255,255,0.6);
+  color: var(--dark);
+  background: rgba(255, 255, 255, 0.07);
 }
 .nav-tab-btn.active {
-  background: #ffffff;
-  color: var(--primary-dark);
-  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: #03170c;
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.35);
 }
+
 /* Hero Section */
 .hero {
-  background: linear-gradient(135deg, #c9f0dc 0%, #effaf3 45%, #cdeee3 100%);
+  position: relative;
+  overflow: hidden;
+  background: transparent;
   border-bottom: 1px solid var(--line);
-  padding: 38px 24px 34px;
+  padding: 64px 24px 58px;
 }
 .hero-inner {
+  position: relative;
+  z-index: 1;
   max-width: 1220px;
   margin: 0 auto;
   display: grid;
@@ -121,8 +133,100 @@ header {
   gap: 32px;
   align-items: center;
 }
+
+/* Decorative globe (CSS-only, no assets) */
+.hero-globe {
+  position: absolute;
+  top: 50%;
+  right: 300px;
+  transform: translateY(-50%);
+  width: 330px;
+  height: 330px;
+  z-index: 0;
+  pointer-events: none;
+}
+.hero-inner > div:not(.hero-globe) {
+  position: relative;
+  z-index: 1;
+}
+.hero-globe::before {
+  content: "";
+  position: absolute;
+  inset: -70px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(34, 197, 94, 0.16), transparent 65%);
+}
+.globe-sphere {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(140, 205, 255, 0.16), transparent 44%),
+    radial-gradient(circle at 68% 64%, rgba(74, 222, 128, 0.12), transparent 48%),
+    radial-gradient(circle at 50% 50%, #0c1728 0%, #060c18 62%, #03060d 100%);
+  box-shadow:
+    inset -20px -16px 50px rgba(0, 0, 0, 0.8),
+    inset 12px 10px 38px rgba(130, 200, 255, 0.10),
+    0 0 80px rgba(74, 222, 128, 0.15),
+    0 0 24px rgba(56, 189, 248, 0.10);
+}
+.globe-sphere::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background-image:
+    radial-gradient(rgba(255, 214, 130, 0.6) 1px, transparent 1.7px),
+    radial-gradient(rgba(160, 220, 255, 0.45) 1px, transparent 1.7px);
+  background-size: 26px 26px, 35px 35px;
+  background-position: 0 0, 13px 19px;
+  -webkit-mask-image: radial-gradient(circle at 44% 40%, #000 24%, transparent 70%);
+  mask-image: radial-gradient(circle at 44% 40%, #000 24%, transparent 70%);
+  opacity: 0.65;
+}
+.globe-orbit {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 480px;
+  height: 128px;
+  transform: translate(-50%, -50%) rotate(-18deg);
+  border: 2px solid rgba(74, 222, 128, 0.5);
+  border-radius: 50%;
+  box-shadow: 0 0 18px rgba(74, 222, 128, 0.3), inset 0 0 18px rgba(74, 222, 128, 0.12);
+}
+.globe-orbit::after {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 62px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: #4ade80;
+  box-shadow: 0 0 14px 5px rgba(74, 222, 128, 0.8);
+}
+.globe-leaf {
+  position: absolute;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.6)) drop-shadow(0 0 10px rgba(74, 222, 128, 0.25));
+}
+.globe-leaf-1 {
+  bottom: -16px;
+  left: -40px;
+  width: 108px;
+  height: 108px;
+  transform: rotate(18deg);
+}
+.globe-leaf-2 {
+  bottom: 4px;
+  right: -24px;
+  width: 78px;
+  height: 78px;
+  transform: rotate(-140deg);
+}
+
 .eyebrow {
-  color: var(--primary);
+  color: var(--primary-light);
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
@@ -130,26 +234,35 @@ header {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  background: linear-gradient(135deg, #d1fae5, #ccfbf1);
-  border: 1px solid #a7f3d0;
+  background: rgba(74, 222, 128, 0.10);
+  border: 1px solid rgba(74, 222, 128, 0.32);
   padding: 4px 12px;
   border-radius: 20px;
   margin-bottom: 12px;
 }
 .hero h1 {
-  font-size: clamp(28px, 4vw, 42px);
-  line-height: 1.15;
+  font-size: clamp(30px, 4.4vw, 46px);
+  line-height: 1.12;
   color: var(--dark);
   font-weight: 850;
   margin-bottom: 12px;
   letter-spacing: -0.5px;
 }
+.svg-ic { width: 14px; height: 14px; flex-shrink: 0; }
+.kpi-icon .svg-ic { width: 15px; height: 15px; }
+.neon-text {
+  color: var(--primary);
+  text-shadow: 0 0 26px rgba(74, 222, 128, 0.5);
+}
 .hero p {
   color: var(--muted);
   font-size: 15px;
   line-height: 1.6;
-  max-width: 620px;
+  max-width: 560px;
   margin-bottom: 20px;
+}
+.hero-cta {
+  margin-bottom: 22px;
 }
 .persona-pills-bar {
   display: flex;
@@ -164,38 +277,40 @@ header {
   color: var(--muted);
 }
 .persona-chip {
-  background: #ffffff;
-  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(120, 200, 150, 0.2);
   padding: 6px 14px;
   border-radius: 20px;
   font-size: 13px;
   font-weight: 600;
-  color: #2e4d3c;
+  color: #cfe8d6;
   cursor: pointer;
   transition: all 0.2s;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
 }
 .persona-chip:hover {
-  border-color: var(--primary-light);
-  background: var(--mint);
+  border-color: var(--primary);
+  background: rgba(74, 222, 128, 0.10);
   transform: translateY(-1px);
 }
 .persona-chip.active {
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-  color: #ffffff;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  color: #03170c;
   border-color: transparent;
-  box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+  box-shadow: 0 4px 14px rgba(34, 197, 94, 0.4);
 }
 
 .hero-card {
-  background: #ffffff;
+  background: rgba(10, 20, 14, 0.85);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: 20px;
   padding: 24px;
-  border: 1px solid #d4e7db;
-  box-shadow: 0 16px 40px rgba(15, 41, 30, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.22);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55), 0 0 44px rgba(34, 197, 94, 0.08);
   position: relative;
   overflow: hidden;
 }
@@ -205,8 +320,8 @@ header {
   top: 0;
   left: 0;
   right: 0;
-  height: 5px;
-  background: linear-gradient(90deg, #10b981, #0284c7, #eab308);
+  height: 4px;
+  background: linear-gradient(90deg, #4ade80, #38bdf8, #facc15);
 }
 .hero-card-header {
   display: flex;
@@ -216,7 +331,7 @@ header {
 }
 .hero-tag {
   background: var(--mint);
-  color: var(--primary);
+  color: var(--primary-light);
   font-size: 11px;
   font-weight: 700;
   padding: 4px 10px;
@@ -226,7 +341,7 @@ header {
 .hero-total-number {
   font-size: 42px;
   font-weight: 900;
-  color: var(--dark);
+  color: #ffffff;
   line-height: 1;
   margin: 10px 0 6px;
 }
@@ -254,18 +369,19 @@ header {
   font-weight: 700;
   margin-bottom: 14px;
 }
-.grade-green { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
-.grade-yellow { background: #fef9c3; color: #854d0e; border: 1px solid #fde047; }
-.grade-red { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.grade-green { background: rgba(74,222,128,0.13); color: #4ade80; border: 1px solid rgba(74,222,128,0.35); }
+.grade-yellow { background: rgba(250,204,21,0.12); color: #facc15; border: 1px solid rgba(250,204,21,0.35); }
+.grade-red { background: rgba(248,113,113,0.12); color: #f87171; border: 1px solid rgba(248,113,113,0.35); }
 
 .hero-stats-mini {
-  border-top: 1px solid #edf4ef;
+  border-top: 1px solid rgba(120, 200, 150, 0.14);
   padding-top: 14px;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   font-size: 12px;
 }
+.hero-stats-mini div span { color: var(--muted); }
 .hero-stats-mini div b {
   display: block;
   font-size: 15px;
@@ -297,9 +413,9 @@ header {
 /* Buttons */
 .btn {
   border: none;
-  background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
-  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.25);
-  color: white;
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+  box-shadow: 0 4px 18px rgba(34, 197, 94, 0.35);
+  color: #03170c;
   padding: 11px 20px;
   border-radius: 10px;
   font-size: 14px;
@@ -313,18 +429,20 @@ header {
   text-decoration: none;
 }
 .btn:hover {
-  background: linear-gradient(135deg, var(--primary-dark) 0%, #0f766e 100%);
-  box-shadow: 0 6px 20px rgba(5, 150, 105, 0.35);
+  background: linear-gradient(135deg, #86efac 0%, #4ade80 100%);
+  box-shadow: 0 6px 24px rgba(74, 222, 128, 0.5);
   transform: translateY(-1px);
 }
 .btn.secondary {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.03);
   color: var(--dark);
-  border: 1px solid #cce3d4;
+  border: 1px solid rgba(120, 200, 150, 0.3);
+  box-shadow: none;
 }
 .btn.secondary:hover {
-  background: #f7faf8;
-  border-color: #a4cdb1;
+  background: rgba(74, 222, 128, 0.08);
+  border-color: var(--primary);
+  transform: translateY(-1px);
 }
 .btn.warning {
   background: #d97706;
@@ -367,6 +485,8 @@ header {
 }
 .card {
   background: var(--card-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border: 1px solid var(--line);
   border-radius: 18px;
   padding: 24px;
@@ -374,7 +494,7 @@ header {
 }
 .card-header {
   margin-bottom: 20px;
-  border-bottom: 1px solid #edf4ef;
+  border-bottom: 1px solid rgba(120, 200, 150, 0.12);
   padding-bottom: 14px;
   display: flex;
   justify-content: space-between;
@@ -423,7 +543,7 @@ header {
   justify-content: space-between;
   font-size: 13px;
   font-weight: 700;
-  color: #25392d;
+  color: #cfe3d4;
   margin-bottom: 6px;
 }
 .form-group label span.val-display {
@@ -433,18 +553,22 @@ header {
 .form-control {
   width: 100%;
   padding: 10px 14px;
-  border: 1px solid #d3e2d6;
+  border: 1px solid rgba(120, 200, 150, 0.22);
   border-radius: 10px;
   font-size: 14px;
-  background: #fbfdfb;
-  color: #1b3023;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--dark);
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 .form-control:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(21, 128, 61, 0.12);
-  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+}
+.form-control option {
+  background: #0b1710;
+  color: var(--dark);
 }
 .form-range {
   width: 100%;
@@ -453,7 +577,7 @@ header {
 }
 .form-hint {
   font-size: 11px;
-  color: #718779;
+  color: var(--muted);
   margin-top: 4px;
   display: block;
 }
@@ -466,15 +590,28 @@ header {
   margin-bottom: 20px;
 }
 .kpi-card {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 16px;
   position: relative;
 }
 .kpi-card.highlight {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
-  border-color: #bbf7d0;
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border-color: rgba(74, 222, 128, 0.32);
+}
+.kpi-icon {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--mint);
+  border: 1px solid var(--mint-border);
+  display: grid;
+  place-items: center;
+  font-size: 15px;
 }
 .kpi-label {
   font-size: 12px;
@@ -486,7 +623,7 @@ header {
 .kpi-value {
   font-size: 26px;
   font-weight: 900;
-  color: var(--dark);
+  color: #ffffff;
   margin: 6px 0 2px;
   line-height: 1.1;
 }
@@ -517,7 +654,7 @@ header {
 }
 .donut-circle-bg {
   fill: none;
-  stroke: #eef4f0;
+  stroke: rgba(255, 255, 255, 0.08);
   stroke-width: 26;
 }
 .donut-center-info {
@@ -533,7 +670,7 @@ header {
 .donut-center-info strong {
   font-size: 24px;
   font-weight: 900;
-  color: var(--dark);
+  color: #ffffff;
   line-height: 1;
 }
 .donut-center-info span {
@@ -575,7 +712,7 @@ header {
 .legend-pct {
   font-size: 11px;
   color: var(--muted);
-  background: #f1f6f2;
+  background: rgba(255, 255, 255, 0.06);
   padding: 2px 6px;
   border-radius: 4px;
 }
@@ -595,11 +732,11 @@ header {
 }
 .bar-row-info span {
   font-weight: 600;
-  color: #2b4234;
+  color: #c4d8ca;
 }
 .bar-track {
   height: 10px;
-  background: #edf3ee;
+  background: rgba(255, 255, 255, 0.07);
   border-radius: 99px;
   overflow: hidden;
 }
@@ -611,8 +748,8 @@ header {
 
 /* Comparison Benchmarks */
 .benchmark-block {
-  background: #f9fcf9;
-  border: 1px solid #e1ebe3;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--line);
   border-radius: 14px;
   padding: 16px;
   margin-top: 20px;
@@ -629,7 +766,7 @@ header {
 .benchmark-meter {
   position: relative;
   height: 16px;
-  background: #e2ece4;
+  background: rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   margin: 22px 0 10px;
 }
@@ -637,8 +774,8 @@ header {
   position: absolute;
   top: -24px;
   transform: translateX(-50%);
-  background: var(--dark);
-  color: #ffffff;
+  background: var(--primary);
+  color: #03170c;
   padding: 2px 7px;
   border-radius: 6px;
   font-size: 10px;
@@ -654,14 +791,14 @@ header {
   transform: translateX(-50%);
   border-width: 4px 4px 0 4px;
   border-style: solid;
-  border-color: var(--dark) transparent transparent transparent;
+  border-color: var(--primary) transparent transparent transparent;
 }
 .benchmark-target-line {
   position: absolute;
   top: 0;
   bottom: 0;
   width: 3px;
-  background: #059669;
+  background: #34d399;
   z-index: 2;
 }
 .benchmark-india-line {
@@ -669,7 +806,7 @@ header {
   top: 0;
   bottom: 0;
   width: 3px;
-  background: #d97706;
+  background: #fbbf24;
   z-index: 2;
 }
 .benchmark-world-line {
@@ -677,7 +814,7 @@ header {
   top: 0;
   bottom: 0;
   width: 3px;
-  background: #dc2626;
+  background: #f87171;
   z-index: 2;
 }
 .benchmark-labels {
@@ -697,17 +834,18 @@ header {
   margin-top: 14px;
 }
 .rec-card {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--line);
   border-radius: 14px;
   padding: 18px;
-  transition: transform 0.2s;
+  transition: transform 0.2s, border-color 0.2s;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
 .rec-card:hover {
   transform: translateY(-2px);
+  border-color: rgba(74, 222, 128, 0.4);
   box-shadow: var(--shadow-sm);
 }
 .rec-top {
@@ -721,6 +859,7 @@ header {
   height: 40px;
   border-radius: 10px;
   background: var(--mint);
+  border: 1px solid var(--mint-border);
   display: grid;
   place-items: center;
   font-size: 20px;
@@ -741,7 +880,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 1px solid #edf4ef;
+  border-top: 1px solid rgba(120, 200, 150, 0.12);
   padding-top: 10px;
   font-size: 12px;
 }
@@ -755,8 +894,8 @@ header {
   font-weight: 700;
   font-size: 11px;
 }
-.level-easy { background: #dcfce7; color: #15803d; }
-.level-med { background: #fef9c3; color: #a16207; }
+.level-easy { background: rgba(74, 222, 128, 0.14); color: #4ade80; }
+.level-med { background: rgba(250, 204, 21, 0.14); color: #facc15; }
 
 /* PERSON-WISE COMPARISON STYLES */
 .personas-grid {
@@ -766,7 +905,7 @@ header {
   margin-bottom: 28px;
 }
 .person-profile-card {
-  background: #ffffff;
+  background: var(--card-bg);
   border: 2px solid var(--line);
   border-radius: 16px;
   padding: 20px;
@@ -781,8 +920,8 @@ header {
 }
 .person-profile-card.selected {
   border-color: var(--primary);
-  background: #fcfefc;
-  box-shadow: 0 0 0 2px rgba(21, 128, 61, 0.15);
+  background: rgba(74, 222, 128, 0.06);
+  box-shadow: 0 0 0 2px rgba(74, 222, 128, 0.22);
 }
 .person-badge-top {
   position: absolute;
@@ -804,7 +943,7 @@ header {
   margin-bottom: 12px;
 }
 .person-metrics-mini {
-  background: #f7faf8;
+  background: rgba(255, 255, 255, 0.04);
   border-radius: 10px;
   padding: 10px 12px;
   margin: 12px 0;
@@ -828,8 +967,8 @@ header {
   font-size: 11px;
 }
 .tag-pill {
-  background: #eef5f0;
-  color: #385343;
+  background: rgba(255, 255, 255, 0.05);
+  color: #a9c4b2;
   padding: 3px 8px;
   border-radius: 6px;
   font-weight: 600;
@@ -841,7 +980,7 @@ header {
   border-radius: 14px;
   border: 1px solid var(--line);
   margin-top: 16px;
-  background: #fff;
+  background: rgba(10, 18, 14, 0.6);
 }
 .compare-table {
   width: 100%;
@@ -850,7 +989,7 @@ header {
   font-size: 13px;
 }
 .compare-table th {
-  background: #f3f8f5;
+  background: rgba(255, 255, 255, 0.04);
   color: var(--dark);
   font-weight: 800;
   padding: 14px 16px;
@@ -859,15 +998,15 @@ header {
 }
 .compare-table td {
   padding: 12px 16px;
-  border-bottom: 1px solid #edf4ef;
-  color: #2b3e32;
+  border-bottom: 1px solid rgba(120, 200, 150, 0.09);
+  color: #c4d8ca;
   white-space: nowrap;
 }
 .compare-table tr:hover td {
-  background: #f9fcf9;
+  background: rgba(74, 222, 128, 0.05);
 }
 .compare-table tr.highlight-row td {
-  background: #f0fdf4;
+  background: rgba(74, 222, 128, 0.09);
   font-weight: 700;
 }
 .val-bold {
@@ -877,8 +1016,8 @@ header {
 
 /* What-If Simulator */
 .sim-box {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
-  border: 1px solid #bbf7d0;
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.07) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid rgba(74, 222, 128, 0.22);
   border-radius: 18px;
   padding: 24px;
 }
@@ -889,8 +1028,8 @@ header {
   align-items: center;
 }
 .sim-result-card {
-  background: #ffffff;
-  border: 1px solid #c8e8d3;
+  background: rgba(8, 16, 12, 0.85);
+  border: 1px solid rgba(74, 222, 128, 0.25);
   border-radius: 16px;
   padding: 24px;
   text-align: center;
@@ -900,6 +1039,7 @@ header {
   font-size: 38px;
   font-weight: 900;
   color: var(--primary);
+  text-shadow: 0 0 24px rgba(74, 222, 128, 0.45);
   margin: 10px 0 4px;
 }
 
@@ -908,7 +1048,7 @@ header {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(15, 41, 30, 0.6);
+  background: rgba(0, 0, 0, 0.72);
   z-index: 100;
   place-items: center;
   padding: 20px;
@@ -918,14 +1058,15 @@ header {
   display: grid;
 }
 .modal-window {
-  background: #ffffff;
+  background: #0b1510;
+  border: 1px solid rgba(120, 200, 150, 0.22);
   border-radius: 20px;
   max-width: 580px;
   width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   padding: 28px;
-  box-shadow: 0 25px 60px rgba(0,0,0,0.25);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.6);
   animation: modalIn 0.25s ease;
 }
 @keyframes modalIn {
@@ -937,7 +1078,7 @@ header {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  border-bottom: 1px solid #edf4ef;
+  border-bottom: 1px solid rgba(120, 200, 150, 0.12);
   padding-bottom: 12px;
 }
 .modal-header h3 {
@@ -961,26 +1102,36 @@ footer {
   border-top: 1px solid var(--line);
   color: var(--muted);
   font-size: 13px;
-  background: #ffffff;
+  background: transparent;
+}
+.footer-tagline {
+  margin-top: 16px;
+  color: var(--primary);
+  font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-shadow: 0 0 18px rgba(74, 222, 128, 0.4);
 }
 
 /* Sync toast */
 #syncToast {
   position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%) translateY(20px);
-  background: #1f2937; color: #f9fafb; padding: 10px 18px; border-radius: 12px;
+  background: #0b1a12; color: #d7f0df; padding: 10px 18px; border-radius: 12px;
+  border: 1px solid rgba(74, 222, 128, 0.3);
   font-size: 13px; font-weight: 600; opacity: 0; pointer-events: none;
-  transition: all 0.25s ease; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  transition: all 0.25s ease; z-index: 200; box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   max-width: 90vw; text-align: center;
 }
 #syncToast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 #ownerNote {
-  font-size: 12px; color: #92400e; background: #fef3c7; border: 1px solid #fde68a;
+  font-size: 12px; color: #fbbf24; background: rgba(251, 191, 36, 0.10); border: 1px solid rgba(251, 191, 36, 0.32);
   border-radius: 8px; padding: 6px 12px; margin-top: 10px; display: none;
 }
 
 /* Print Styling */
 @media print {
-  header, .hero, .nav-tabs, .persona-pills-bar, .actions-bar, .btn {
+  header, .hero, .nav-tabs, .persona-pills-bar, .actions-bar, .btn, .hero-globe {
     display: none !important;
   }
   body, .container {
@@ -989,7 +1140,14 @@ footer {
     padding: 0 !important;
     max-width: 100% !important;
   }
-  .card {
+  body, .section-head h2, .card-header h3, .kpi-value, .donut-center-info strong,
+  .compare-table th, .compare-table td, .form-group label, .person-name, .rec-card h4,
+  .val-bold, .sim-diff-number {
+    color: #1e2922 !important;
+    text-shadow: none !important;
+  }
+  .card, .kpi-card, .rec-card, .sim-result-card, .sim-box, .person-profile-card {
+    background: #ffffff !important;
     box-shadow: none !important;
     border: 1px solid #ccc !important;
     break-inside: avoid;
@@ -997,6 +1155,12 @@ footer {
 }
 
 /* Responsive */
+@media (max-width: 1200px) {
+  .hero-globe { right: 190px; }
+}
+@media (max-width: 1000px) {
+  .hero-globe { display: none; }
+}
 @media (max-width: 900px) {
   .hero-inner, .layout-2col, .sim-grid {
     grid-template-columns: 1fr;
@@ -1018,6 +1182,7 @@ footer {
     overflow-x: auto;
   }
 }
+
 </style>
 </head>
 <body>
@@ -1029,19 +1194,19 @@ footer {
       <span class="brand-icon">🌱</span>
       <div>
         <span>Carbon Footprint Estimator</span>
-        <div style="font-size: 11px; font-weight: 600; color: var(--muted);">Individual & Persona-Wise Environmental Impact</div>
+        <div style="font-size: 11px; font-weight: 600; color: var(--muted);">Measure • Understand • Reduce</div>
       </div>
     </a>
     
     <div class="nav-tabs">
       <button class="nav-tab-btn active" id="tabBtn-calculator" onclick="switchTab('calculator')">
-        <span>📱 Calculator & Results</span>
+        <span>🧮 Calculator & Results</span>
       </button>
       <button class="nav-tab-btn" id="tabBtn-comparison" onclick="switchTab('comparison')">
         <span>👥 Person-Wise Analysis</span>
       </button>
       <button class="nav-tab-btn" id="tabBtn-simulator" onclick="switchTab('simulator')">
-        <span>🧪 What-If Simulator</span>
+        <span>📈 What-If Simulator</span>
       </button>
     </div>
   </div>
@@ -1050,14 +1215,31 @@ footer {
 <!-- Hero Section -->
 <section class="hero">
   <div class="hero-inner">
+  <div class="hero-globe" aria-hidden="true">
+    <div class="globe-orbit"></div>
+    <div class="globe-sphere"></div>
+    <svg class="globe-leaf globe-leaf-1" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M50 96 C18 74 8 40 16 12 C48 18 76 44 76 74 C76 86 64 96 50 96 Z" fill="#16a34a" stroke="#4ade80" stroke-width="2.5"/>
+      <path d="M50 90 C44 60 36 38 22 20" stroke="#bbf7d0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M44 66 C52 60 60 58 68 58 M40 50 C48 44 56 42 62 42 M36 36 C42 32 48 30 54 30" stroke="#86efac" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>
+    <svg class="globe-leaf globe-leaf-2" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M50 96 C18 74 8 40 16 12 C48 18 76 44 76 74 C76 86 64 96 50 96 Z" fill="#15803d" stroke="#4ade80" stroke-width="2.5"/>
+      <path d="M50 90 C44 60 36 38 22 20" stroke="#bbf7d0" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      <path d="M44 66 C52 60 60 58 68 58 M40 50 C48 44 56 42 62 42 M36 36 C42 32 48 30 54 30" stroke="#86efac" stroke-width="2" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+
     <div>
       <div class="eyebrow">
-        <span>🌍</span> Educational Working Project
+        <svg class="svg-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#22c55e"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#bbf7d0" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg> A Greener Tomorrow
       </div>
-      <h1>Carbon Footprint Estimator</h1>
+      <h1>Carbon Footprint <span class="neon-text">Estimator</span></h1>
       <p>
         Calculate, breakdown, and compare greenhouse gas emissions (CO₂e) across different individual lifestyles and personas. See how transportation, electricity, diet, and consumption directly dictate personal carbon emissions.
       </p>
+
+      <button class="btn hero-cta" onclick="switchTab('calculator'); document.querySelector('main.container').scrollIntoView({behavior:'smooth'});"><svg class="svg-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#052012"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#4ade80" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg> Start Calculating →</button>
 
       <div style="font-size: 13px; font-weight: 700; color: var(--dark); margin-bottom: 6px;">
         ⚡ Instant Quick Personas (Click to test person-wise):
@@ -1234,16 +1416,19 @@ footer {
         <!-- KPI Cards -->
         <div class="kpi-grid">
           <div class="kpi-card highlight">
+            <div class="kpi-icon"><svg class="svg-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#22c55e"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#bbf7d0" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></div>
             <div class="kpi-label">Annual Footprint</div>
             <div class="kpi-value" id="kpiAnnual">2.3 <span style="font-size: 14px; font-weight: 600;">t</span></div>
             <div class="kpi-sub">tonnes CO₂e / year</div>
           </div>
           <div class="kpi-card">
+            <div class="kpi-icon"><svg class="svg-ic" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" aria-hidden="true"><rect x="3.5" y="5" width="17" height="16" rx="3"/><path d="M3.5 10h17M8 2.5v4M16 2.5v4"/></svg></div>
             <div class="kpi-label">Monthly Footprint</div>
             <div class="kpi-value" id="kpiMonthly">191 <span style="font-size: 14px; font-weight: 600;">kg</span></div>
             <div class="kpi-sub">kg CO₂e / month</div>
           </div>
           <div class="kpi-card">
+            <div class="kpi-icon"><svg class="svg-ic" viewBox="0 0 24 24" fill="none" stroke="#4ade80" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c3 3.2 3 13.8 0 17c-3-3.2-3-13.8 0-17z"/></svg></div>
             <div class="kpi-label">Daily Average</div>
             <div class="kpi-value" id="kpiDaily">6.4 <span style="font-size: 14px; font-weight: 600;">kg</span></div>
             <div class="kpi-sub">kg CO₂e / day</div>
@@ -1344,9 +1529,9 @@ footer {
             </div>
             <div class="benchmark-labels">
               <span>0 t</span>
-              <span style="color: #059669;">🌱 Target: 2.0 t</span>
-              <span style="color: #d97706;">🇮🇳 India: 1.9 t</span>
-              <span style="color: #dc2626;">🌐 World: 4.7 t</span>
+              <span style="color: #4ade80;">🌱 Target: 2.0 t</span>
+              <span style="color: #fbbf24;">🇮🇳 India: 1.9 t</span>
+              <span style="color: #f87171;">🌐 World: 4.7 t</span>
               <span>10 t+</span>
             </div>
             <div style="font-size: 12px; color: var(--muted); margin-top: 10px;" id="benchmarkExplainText">
@@ -1439,20 +1624,20 @@ footer {
         </div>
       </div>
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
-        <div style="background: #f8faf8; border-radius: 12px; padding: 16px; border-left: 4px solid var(--primary);">
-          <b style="color: var(--primary-dark); display: block; margin-bottom: 4px;">🚗 Impact of Solo Car Travel:</b>
+        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border-left: 4px solid var(--primary);">
+          <b style="color: var(--primary); display: block; margin-bottom: 4px;">🚗 Impact of Solo Car Travel:</b>
           <span style="font-size: 13px; color: var(--muted);">
             Comparing Vikram (Corporate Exec) with Sneha (Metro Commuter) shows that daily solo car driving is the single biggest driver of high individual carbon footprints in urban areas.
           </span>
         </div>
-        <div style="background: #f8faf8; border-radius: 12px; padding: 16px; border-left: 4px solid #eab308;">
-          <b style="color: #854d0e; display: block; margin-bottom: 4px;">⚡ Electricity & AC Grid Factor:</b>
+        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border-left: 4px solid #eab308;">
+          <b style="color: #fbbf24; display: block; margin-bottom: 4px;">⚡ Electricity & AC Grid Factor:</b>
           <span style="font-size: 13px; color: var(--muted);">
             High thermal grid emission factors (0.70 kg CO₂e/kWh in India) make prolonged air-conditioner usage another heavy contributor to personal emissions.
           </span>
         </div>
-        <div style="background: #f8faf8; border-radius: 12px; padding: 16px; border-left: 4px solid #10b981;">
-          <b style="color: #065f46; display: block; margin-bottom: 4px;">🥗 The Plant-Based Advantage:</b>
+        <div style="background: rgba(255,255,255,0.03); border-radius: 12px; padding: 16px; border-left: 4px solid #10b981;">
+          <b style="color: #34d399; display: block; margin-bottom: 4px;">🥗 The Plant-Based Advantage:</b>
           <span style="font-size: 13px; color: var(--muted);">
             Switching from a meat-heavy diet (250 kg/mo) to vegetarian (140 kg/mo) or plant-based (100 kg/mo) creates an instant reduction of 1.3 to 1.8 tonnes of CO₂e per person annually.
           </span>
@@ -1533,7 +1718,7 @@ footer {
 
         <!-- Simulation Result Card -->
         <div class="sim-result-card">
-          <span class="hero-tag" style="background: #dcfce7; color: #166534;">🎉 Projected Environmental Impact</span>
+          <span class="hero-tag" style="background: rgba(74,222,128,0.13); color: #4ade80; border: 1px solid rgba(74,222,128,0.35);">🎉 Projected Environmental Impact</span>
           
           <div class="sim-diff-number" id="simSavedKg">
             -2,740 kg
@@ -1542,7 +1727,7 @@ footer {
             CO₂e Saved Every Year!
           </div>
 
-          <div style="background: #f7faf8; border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: left; font-size: 13px;">
+          <div style="background: rgba(255,255,255,0.04); border: 1px solid rgba(120,200,150,0.12); border-radius: 12px; padding: 14px; margin-bottom: 16px; text-align: left; font-size: 13px;">
             <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
               <span>Baseline Footprint:</span>
               <b id="simBaselineVal">8.8 tonnes / yr</b>
@@ -1551,13 +1736,13 @@ footer {
               <span>New Projected Footprint:</span>
               <b id="simNewVal">6.1 tonnes / yr</b>
             </div>
-            <div style="display: flex; justify-content: space-between; font-weight: 800; border-top: 1px solid #e2ece5; padding-top: 6px;">
+            <div style="display: flex; justify-content: space-between; font-weight: 800; border-top: 1px solid rgba(120,200,150,0.18); padding-top: 6px;">
               <span>Total Reduction:</span>
               <span id="simPctVal" style="color: var(--primary);">-31.1%</span>
             </div>
           </div>
 
-          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 700; color: #166534;">
+          <div style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 700; color: #4ade80;">
             <span>🌳 Equivalent to planting <b>55 mature trees</b></span>
           </div>
         </div>
@@ -1657,6 +1842,7 @@ footer {
     <div style="font-size: 11px; color: #72897c;">
       Calculations adhere to standard IPCC and CEA greenhouse gas conversion methodologies. Built for pair-programming and presentation showcase.
     </div>
+    <div class="footer-tagline"><svg class="svg-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#22c55e"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#bbf7d0" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg> Reduce Your Carbon Footprint, Save Our Planet <svg class="svg-ic" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#22c55e"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#bbf7d0" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg></div>
   </div>
 </footer>
 
@@ -2294,7 +2480,7 @@ function renderComparisonView() {
         <td><span class="badge-level ${res.gradeClass}">${res.grade}</span></td>
         <td>
           <button class="btn btn-sm secondary" onclick="event.stopPropagation(); selectPersona('${p.id}'); switchTab('calculator');">Load ↗</button>
-          ${(personas.length > 1 && canEditProfile(p)) ? `<button class="btn btn-sm secondary" style="color: #dc2626;" onclick="event.stopPropagation(); deletePerson('${p.id}')">✕</button>` : ''}
+          ${(personas.length > 1 && canEditProfile(p)) ? `<button class="btn btn-sm secondary" style="color: #f87171;" onclick="event.stopPropagation(); deletePerson('${p.id}')">✕</button>` : ''}
         </td>
       </tr>
     `;
