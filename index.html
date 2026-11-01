@@ -1548,7 +1548,7 @@ footer {
               <h3>💡 Tailored Reduction Recommendations</h3>
               <p>Top actionable measures to reduce this person's footprint</p>
             </div>
-            <button class="btn btn-sm secondary" onclick="window.print()">🖨️ Print / Save Report</button>
+            <button class="btn btn-sm secondary" id="pdfReportBtn" onclick="downloadPDFReport()"><svg class="svg-ic" viewBox="0 0 24 24" width="15" height="15" aria-hidden="true" style="vertical-align:-2px;"><path d="M12 3v11m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2a1.5 1.5 0 0 0 1.5 1.5h11A1.5 1.5 0 0 0 19 19v-2" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg> Download PDF Report</button>
           </div>
           <div class="recs-grid" id="recsContainer">
             <!-- Rendered dynamically -->
@@ -1850,6 +1850,8 @@ footer {
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ==========================================
 // DATA STORE & DEFAULT PERSONAS
@@ -2638,6 +2640,280 @@ function handleCreatePerson(e) {
   renderComparisonView();
   switchTab('comparison');
   alert(`Created profile for ${name}!`);
+}
+
+
+// ==========================================
+// PDF REPORT DOWNLOAD
+// ==========================================
+function getSelectLabel(id) {
+  const el = document.getElementById(id);
+  if (!el || !el.selectedOptions || !el.selectedOptions[0]) return '';
+  return el.selectedOptions[0].textContent.trim();
+}
+
+// Builds a two-page, A4-proportioned (794x1123) dark-themed report from live app state
+function buildReportElement() {
+  const car = Math.max(0, parseFloat(document.getElementById('inputCar').value) || 0);
+  const bike = Math.max(0, parseFloat(document.getElementById('inputBike').value) || 0);
+  const pub = Math.max(0, parseFloat(document.getElementById('inputPublic').value) || 0);
+  const flight = Math.max(0, parseFloat(document.getElementById('inputFlight').value) || 0);
+  const elec = Math.max(0, parseFloat(document.getElementById('inputElec').value) || 0);
+  const lpg = Math.max(0, parseFloat(document.getElementById('inputLpg').value) || 0);
+  const diet = parseFloat(document.getElementById('selectDiet').value) || 140;
+  const waste = parseFloat(document.getElementById('selectWaste').value) || 20;
+
+  const currentObj = { car, bike, public: pub, flight, elec, lpg, diet, waste };
+  const res = calculatePersonEmissions(currentObj);
+
+  const p = personas.find(item => item.id === activePersonId) || personas[0] || { name: 'Individual', role: '' };
+  const tot = res.monthlyTotal || 1;
+  const cats = [
+    { name: 'Transport & Travel', val: res.transport, color: '#38bdf8' },
+    { name: 'Electricity & Energy', val: res.electricity, color: '#fbbf24' },
+    { name: 'Diet & Food', val: res.food, color: '#4ade80' },
+    { name: 'Waste & Goods', val: res.waste, color: '#f472b6' }
+  ].sort((a,b) => b.val - a.val);
+
+  // Pull the live recommendation cards so the PDF matches what is on screen
+  const recs = [];
+  document.querySelectorAll('#recsContainer .rec-card').forEach(card => {
+    const title = (card.querySelector('h4') || {}).textContent || '';
+    const desc = (card.querySelector('p') || {}).textContent || '';
+    const save = (card.querySelector('.rec-save') || {}).textContent || '';
+    const badge = (card.querySelector('.badge-level') || {}).textContent || '';
+    if (title) recs.push({ title, desc, save, badge });
+  });
+
+  let benchText = '';
+  if (res.annualTotalTonnes <= 1.9) {
+    benchText = 'Great! This footprint is below the Indian National Average (1.9 t) and meets the Paris Climate Agreement target.';
+  } else if (res.annualTotalTonnes <= 4.7) {
+    benchText = 'This footprint is above the Indian National Average (1.9 t), but below the World Average (4.7 t). Transportation and energy efficiency can lower it.';
+  } else {
+    benchText = 'High Impact: this footprint exceeds the Global Average (4.7 t). Substantial reductions in car travel and energy consumption are recommended.';
+  }
+
+  const dateStr = new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' });
+  const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+
+  // Theme tokens (match site: black bg, neon green accents)
+  const BG = '#060b08', CARD = '#0c140f', BORDER = '#1d3324', TXT = '#e8f4ec', MUT = '#9db5a5',
+        GRN = '#4ade80', DGRN = '#16a34a', DARKTXT = '#052e10';
+  const font = 'font-family:"Plus Jakarta Sans", Arial, sans-serif;';
+  const pageCss = `width:794px; height:1123px; box-sizing:border-box; background:${BG}; color:${TXT}; ${font} padding:44px 48px; position:relative; overflow:hidden;`;
+  const secTitle = `font-size:15px; font-weight:800; color:${GRN}; letter-spacing:1.2px; text-transform:uppercase; margin:0 0 10px;`;
+  const cardBox = `background:${CARD}; border:1px solid ${BORDER}; border-radius:12px;`;
+  const thC = `border:1px solid ${BORDER}; background:#122016; color:${GRN}; padding:8px 10px; text-align:left; font-size:11.5px;`;
+  const tdC = `border:1px solid ${BORDER}; padding:8px 10px; font-size:12px; color:${TXT};`;
+  const footer = (n) => `
+    <div style="position:absolute; left:48px; right:48px; bottom:26px; border-top:1px solid ${BORDER}; padding-top:10px; display:flex; justify-content:space-between; font-size:10.5px; color:${MUT};">
+      <span>Reduce Your Carbon Footprint, Save Our Planet</span>
+      <span>Page ${n} of 2</span>
+    </div>`;
+
+  // Donut chart (same style as the site dashboard) with live category shares
+  const R = 64, CIRC = 2 * Math.PI * R;
+  let donutOffset = 0;
+  const donutSegs = cats.map(c => {
+    const frac = c.val / tot;
+    const len = Math.max(0, frac * CIRC - 2); // small gap between segments
+    const seg = `<circle cx="90" cy="90" r="${R}" fill="none" stroke="${c.color}" stroke-width="24"
+      stroke-dasharray="${len.toFixed(1)} ${CIRC.toFixed(1)}" stroke-dashoffset="${(-donutOffset).toFixed(1)}"
+      transform="rotate(-90 90 90)"/>`;
+    donutOffset += frac * CIRC;
+    return seg;
+  }).join('');
+  const donutSvg = `
+    <svg width="180" height="180" viewBox="0 0 180 180">
+      <circle cx="90" cy="90" r="${R}" fill="none" stroke="#18251c" stroke-width="24"/>
+      ${donutSegs}
+      <text x="90" y="86" text-anchor="middle" fill="${TXT}" font-size="26" font-weight="800" font-family="Plus Jakarta Sans, Arial">${Math.round(res.monthlyTotal)}</text>
+      <text x="90" y="106" text-anchor="middle" fill="${MUT}" font-size="11" font-family="Plus Jakarta Sans, Arial">kg CO&#8322;e / mo</text>
+    </svg>`;
+  const donutLegend = cats.map(c => {
+    const pct = Math.round((c.val / tot) * 100);
+    return `<div style="display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid ${BORDER}; font-size:12px;">
+      <span><span style="display:inline-block; width:10px; height:10px; border-radius:3px; background:${c.color}; margin-right:8px;"></span>${c.name}</span>
+      <b>${c.val.toFixed(1)} kg <span style="color:${MUT}; font-weight:600;">(${pct}%)</span></b>
+    </div>`;
+  }).join('');
+
+  const wrap = document.createElement('div');
+  wrap.id = 'pdfReportSource';
+  wrap.style.cssText = 'position:absolute; left:-10000px; top:0;';
+
+  const leafSvg = `<svg width="22" height="22" viewBox="0 0 24 24" style="vertical-align:-4px;"><path d="M12 22C6.5 17.5 4 12 5.5 4.5C12.5 6 18 11 18 16.5C18 20 15.5 22 12 22Z" fill="#22c55e"/><path d="M12 20C10.5 14 8.5 9.5 6 6.5" stroke="#bbf7d0" stroke-width="1.4" fill="none" stroke-linecap="round"/></svg>`;
+
+  wrap.innerHTML = `
+  <div class="pdf-page" style="${pageCss}">
+    <div style="border-bottom:2px solid ${DGRN}; padding-bottom:14px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:flex-end;">
+      <div>
+        <div style="font-size:24px; font-weight:800; color:${TXT};">${leafSvg} Carbon Footprint <span style="color:${GRN};">Report</span></div>
+        <div style="font-size:11.5px; color:${MUT}; margin-top:5px;">Carbon Footprint Estimator &bull; Personal Sustainability Analysis</div>
+      </div>
+      <div style="text-align:right; font-size:11px; color:${MUT};">Report Date<br><b style="color:${TXT}; font-size:12.5px;">${dateStr}</b></div>
+    </div>
+
+    <div style="${secTitle}">Person Details</div>
+    <div style="${cardBox} padding:14px 18px; margin-bottom:20px;">
+      <table style="width:100%; border-collapse:collapse; font-size:12.5px;" cellpadding="0" cellspacing="0">
+        <tr>
+          <td style="padding:4px 0; width:50%;"><span style="color:${MUT};">Name:</span> <b>${esc(p.name)}</b></td>
+          <td style="padding:4px 0; width:50%;"><span style="color:${MUT};">Profile:</span> <b>${esc(p.role || 'Individual')}</b></td>
+        </tr>
+        <tr>
+          <td style="padding:4px 0;"><span style="color:${MUT};">Eco-Rating:</span> <span style="display:inline-block; font-weight:700; color:${DARKTXT}; background:${GRN}; border-radius:12px; padding:2px 12px; font-size:11.5px;">${esc(res.grade)}</span></td>
+          <td style="padding:4px 0;"><span style="color:${MUT};">Offset Needed:</span> <b style="color:${GRN};">~${res.treesNeeded} trees / year</b></td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="${secTitle}">Footprint Summary</div>
+    <table style="width:100%; border-collapse:separate; border-spacing:8px 0; margin:0 -8px 20px;" cellpadding="0" cellspacing="0">
+      <tr>
+        ${[
+          ['Annual Footprint', res.annualTotalTonnes.toFixed(1) + ' t'],
+          ['Monthly Footprint', Math.round(res.monthlyTotal) + ' kg'],
+          ['Daily Average', res.dailyKg.toFixed(1) + ' kg'],
+          ['Top Contributor', cats[0].name.split(' &')[0]]
+        ].map(k => `
+        <td style="width:25%; ${cardBox} padding:14px 10px; text-align:center;">
+          <div style="font-size:${k[0]==='Top Contributor' ? '15px' : '21px'}; font-weight:800; color:${GRN};">${k[1]}</div>
+          <div style="font-size:10.5px; color:${MUT}; margin-top:4px;">${k[0]}</div>
+        </td>`).join('')}
+      </tr>
+    </table>
+
+    <div style="${secTitle}">Lifestyle Inputs (per month)</div>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;" cellpadding="0" cellspacing="0">
+      <tr>
+        <th style="${thC}">Car travel</th><th style="${thC}">Two-wheeler</th><th style="${thC}">Public transport</th>
+        <th style="${thC}">Flights</th><th style="${thC}">Electricity</th><th style="${thC}">LPG</th>
+      </tr>
+      <tr>
+        <td style="${tdC}">${car} km</td><td style="${tdC}">${bike} km</td><td style="${tdC}">${pub} km</td>
+        <td style="${tdC}">${flight} hrs</td><td style="${tdC}">${elec} kWh</td><td style="${tdC}">${lpg} cylinders</td>
+      </tr>
+    </table>
+    <div style="${cardBox} padding:12px 16px; font-size:12px; margin-bottom:20px;">
+      <span style="color:${MUT};">Diet:</span> ${esc(getSelectLabel('selectDiet'))}<br>
+      <span style="color:${MUT};">Waste &amp; shopping:</span> ${esc(getSelectLabel('selectWaste'))}
+    </div>
+
+    <div style="${secTitle}">How Does This Compare?</div>
+    <div style="${cardBox} padding:14px 18px;">
+      <div style="font-size:12.5px; line-height:1.55;">${benchText}</div>
+      <table style="width:100%; border-collapse:collapse; margin-top:12px; font-size:11.5px;" cellpadding="0" cellspacing="0">
+        <tr>
+          <th style="${thC}">Benchmark</th><th style="${thC}">CO&#8322;e / person / year</th><th style="${thC}">vs This Footprint</th>
+        </tr>
+        ${[
+          ['Paris Climate Target', 2.0, '#4ade80'],
+          ['India National Average', 1.9, '#fbbf24'],
+          ['World Average', 4.7, '#f87171']
+        ].map(b => {
+          const diff = res.annualTotalTonnes - b[1];
+          const cmp = Math.abs(diff) < 0.05 ? 'Same level' : (diff > 0 ? diff.toFixed(1) + ' t above' : Math.abs(diff).toFixed(1) + ' t below');
+          return `<tr><td style="${tdC}"><span style="color:${b[2]}; font-weight:700;">&#9679;</span> ${b[0]}</td><td style="${tdC}">${b[1].toFixed(1)} t</td><td style="${tdC}">${cmp}</td></tr>`;
+        }).join('')}
+      </table>
+    </div>
+    ${footer(1)}
+  </div>
+
+  <div class="pdf-page" style="${pageCss} page-break-before:always;">
+    <div style="border-bottom:2px solid ${DGRN}; padding-bottom:12px; margin-bottom:20px;">
+      <div style="font-size:17px; font-weight:800; color:${TXT};">${leafSvg} ${esc(p.name)} <span style="color:${MUT}; font-weight:600; font-size:12px;">&bull; Detailed Analysis</span></div>
+    </div>
+
+    <div style="${secTitle}">Category Contribution</div>
+    <div style="${cardBox} padding:12px 18px; margin-bottom:14px; display:flex; align-items:center; gap:24px;">
+      <div style="flex:0 0 180px;">${donutSvg}</div>
+      <div style="flex:1;">${donutLegend}</div>
+    </div>
+
+    <div style="${secTitle}">Emissions Breakdown</div>
+    <table style="width:100%; border-collapse:collapse; margin-bottom:14px;" cellpadding="0" cellspacing="0">
+      <tr>
+        <th style="${thC}">Category</th><th style="${thC}">Emissions</th><th style="${thC}">Share</th><th style="${thC} width:40%;">Proportion</th>
+      </tr>
+      ${cats.map(c => {
+        const pct = (c.val / tot) * 100;
+        return `<tr>
+          <td style="${tdC}">${c.name}</td>
+          <td style="${tdC}">${c.val.toFixed(1)} kg/mo</td>
+          <td style="${tdC}">${Math.round(pct)}%</td>
+          <td style="${tdC}"><div style="background:#18251c; border-radius:4px; height:10px; width:100%;"><div style="background:${c.color}; height:10px; border-radius:4px; width:${Math.min(100, Math.max(3, pct))}%;"></div></div></td>
+        </tr>`;
+      }).join('')}
+      <tr>
+        <td style="${tdC} font-weight:800; color:${GRN};">Total</td>
+        <td style="${tdC} font-weight:800; color:${GRN};">${Math.round(res.monthlyTotal)} kg/mo</td>
+        <td style="${tdC} font-weight:800; color:${GRN};">100%</td>
+        <td style="${tdC}"></td>
+      </tr>
+    </table>
+
+    <div style="${secTitle}">Tailored Reduction Recommendations</div>
+    ${recs.map((r, i) => `
+      <div style="${cardBox} border-left:4px solid ${DGRN}; padding:9px 14px; margin-bottom:7px;">
+        <div style="font-size:13px; font-weight:700; color:${TXT};">${i+1}. ${esc(r.title)}
+          <span style="font-size:10px; font-weight:700; color:${DARKTXT}; background:${GRN}; border-radius:10px; padding:2px 9px; margin-left:8px;">${esc(r.badge)}</span>
+        </div>
+        <div style="font-size:11.5px; color:${MUT}; margin-top:4px; line-height:1.5;">${esc(r.desc)}</div>
+        <div style="font-size:11px; font-weight:700; color:${GRN}; margin-top:5px;">${esc(r.save)}</div>
+      </div>`).join('')}
+
+    <div style="${cardBox} margin-top:12px; padding:9px 14px; font-size:10.5px; color:${MUT}; line-height:1.5;">
+      Generated by Carbon Footprint Estimator from the current on-screen values for ${esc(p.name)}.
+      Emissions are estimates in CO&#8322;-equivalent based on standard emission factors.
+    </div>
+    ${footer(2)}
+  </div>`;
+
+  const pages = Array.from(wrap.querySelectorAll('.pdf-page'));
+  return { el: wrap, pages, name: p.name };
+}
+
+function downloadPDFReport() {
+  if (typeof html2canvas === 'undefined' || !window.jspdf || !window.jspdf.jsPDF) {
+    // CDN failed to load - fall back to the browser print dialog (Save as PDF)
+    window.print();
+    return;
+  }
+  const btn = document.getElementById('pdfReportBtn');
+  const originalHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.disabled = true; btn.textContent = 'Generating PDF...'; }
+
+  const built = buildReportElement();
+  document.body.appendChild(built.el);
+
+  const safeName = String(built.name || 'Report').replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '') || 'Report';
+  const filename = `Carbon-Footprint-Report-${safeName}.pdf`;
+
+  function cleanup() {
+    if (built.el.parentNode) built.el.parentNode.removeChild(built.el);
+    if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; }
+  }
+
+  // Render each fixed A4-ratio page div to its own PDF page: always exactly 2 pages
+  (async function() {
+    const jsPDF = window.jspdf.jsPDF;
+    const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+    for (let i = 0; i < built.pages.length; i++) {
+      const canvas = await html2canvas(built.pages[i], { scale: 2, useCORS: true, backgroundColor: '#060b08', logging: false });
+      const img = canvas.toDataURL('image/jpeg', 0.95);
+      if (i > 0) pdf.addPage();
+      pdf.addImage(img, 'JPEG', 0, 0, 210, 297);
+    }
+    pdf.save(filename);
+  })()
+    .catch(function(err) {
+      console.error('PDF generation failed', err);
+      window.print();
+    })
+    .finally(cleanup);
 }
 
 // ==========================================
