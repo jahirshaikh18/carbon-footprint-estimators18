@@ -2716,6 +2716,9 @@ function initApp() {
     personas = JSON.parse(JSON.stringify(DEFAULT_PERSONAS));
     saveToStorage();
   }
+  // Owner-stamped private profiles are hidden until auth confirms whose device
+  // this is; the private listener re-adds them for the rightful login.
+  personas = personas.filter(function(p){ return !(p.visibility === 'private' && p.owner); });
 
   initSync();
 
@@ -3219,7 +3222,8 @@ let privateRef = null;
 let historyRef = null;
 let privateCache = {};
 let historyCache = {};
-try { historyCache = JSON.parse(localStorage.getItem('eco_carbon_history') || '{}') || {}; } catch(e) { historyCache = {}; }
+localStorage.removeItem('eco_carbon_history'); // retired shared key - history is per-login now
+function historyKey() { return syncUid ? ('eco_carbon_history_' + syncUid) : null; }
 
 function visiblePersonas() {
   if (!showMineOnly) return personas;
@@ -3252,7 +3256,8 @@ function recordHistoryPoint(p) {
   const mk = monthKeyNow();
   historyCache[p.id] = historyCache[p.id] || {};
   historyCache[p.id][mk] = kg;
-  localStorage.setItem('eco_carbon_history', JSON.stringify(historyCache));
+  const hk = historyKey();
+  if (hk) localStorage.setItem(hk, JSON.stringify(historyCache));
   if (syncDb && syncUid) {
     syncDb.ref('eco_carbon/history/' + syncUid + '/' + p.id + '/' + mk).set(kg).catch(function() {});
   }
@@ -3393,16 +3398,34 @@ function attachUserListeners() {
   if (privateRef) { privateRef.off(); privateRef = null; }
   if (historyRef) { historyRef.off(); historyRef = null; }
   privateCache = {};
+  // Identity changed (login/logout/switch): never show another identity's
+  // private profiles or history that this browser cached.
+  personas = personas.filter(function(p){ return !(p.visibility === 'private' && p.owner && p.owner !== syncUid); });
+  localStorage.setItem('eco_carbon_personas', JSON.stringify(personas));
+  historyCache = {};
+  const hk = historyKey();
+  if (hk) {
+    try { historyCache = JSON.parse(localStorage.getItem(hk) || '{}') || {}; } catch(e) { historyCache = {}; }
+  }
+  renderPersonaPills();
+  renderComparisonView();
+  renderProgressChart();
   if (!syncUid) return;
+  const uidAtAttach = syncUid;
   privateRef = syncDb.ref('eco_carbon/private/' + syncUid);
-  privateRef.on('value', function(snap) { applyPrivateRemote(snap.val() || {}); }, function() {});
+  privateRef.on('value', function(snap) {
+    if (syncUid !== uidAtAttach) return; // stale callback from a previous login
+    applyPrivateRemote(snap.val() || {});
+  }, function() {});
   historyRef = syncDb.ref('eco_carbon/history/' + syncUid);
   historyRef.on('value', function(snap) {
+    if (syncUid !== uidAtAttach) return; // stale callback from a previous login
     const val = snap.val() || {};
     Object.keys(val).forEach(function(pid) {
       historyCache[pid] = Object.assign(historyCache[pid] || {}, val[pid] || {});
     });
-    localStorage.setItem('eco_carbon_history', JSON.stringify(historyCache));
+    const hk2 = historyKey();
+    if (hk2) localStorage.setItem(hk2, JSON.stringify(historyCache));
     renderProgressChart();
   }, function() {});
 }
