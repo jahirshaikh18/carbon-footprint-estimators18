@@ -1454,6 +1454,22 @@ body {
   .topbar { padding: 10px 16px; }
 }
 
+
+/* v4: monthly progress chart, my-profiles filter, about tab */
+#progressChartWrap text { font-family: inherit; }
+.about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+@media (max-width: 900px) { .about-grid { grid-template-columns: 1fr; } }
+.about-card { background: var(--card-bg); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+.about-card h3 { font-size: 16px; margin-bottom: 10px; color: var(--dark); }
+.about-card p, .about-card li { color: var(--muted); font-size: 13.5px; line-height: 1.7; }
+.about-card ul { margin: 8px 0 0 18px; }
+.about-card li b, .about-card p b { color: var(--dark); }
+.factor-table { width: 100%; border-collapse: collapse; font-size: 13.5px; margin-top: 8px; }
+.factor-table th, .factor-table td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--line); }
+.factor-table th { color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; }
+.factor-table td { color: var(--dark); }
+.factor-table td:last-child { color: var(--primary); font-weight: 700; }
+
 </style>
 </head>
 <body>
@@ -1478,6 +1494,9 @@ body {
       </button>
       <button class="nav-tab-btn" id="tabBtn-simulator" onclick="switchTab('simulator')">
         <span>📈 What-If Simulator</span>
+      </button>
+      <button class="nav-tab-btn" id="tabBtn-about" onclick="switchTab('about')">
+        <span>ℹ️ How It Works</span>
       </button>
     </div>
     <div class="sidebar-foot">
@@ -1694,6 +1713,14 @@ document.getElementById('topbarDate').textContent = '📅 ' + new Date().toLocal
           <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
             <button class="btn" type="button" id="saveProfileBtn" onclick="saveCurrentProfileEdits()">💾 Save Changes to Profile</button>
             <div id="ownerNote">👀 View only - this profile was created on another device. Clone it to make your own copy.</div>
+            <div class="form-group" id="visibilityRow" style="display: none; margin-top: 16px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--mint);">
+              <label for="visibilitySelect" style="margin-bottom: 6px; display: block;">🔒 Profile Visibility</label>
+              <select class="form-control" id="visibilitySelect" onchange="changeVisibility(this.value)">
+                <option value="public">🌍 Public - visible in everyone's comparison</option>
+                <option value="private">🔒 Private - only I can see it</option>
+              </select>
+              <small class="form-hint">Private profiles are readable only by your login - enforced by database security rules, not just hidden on screen.</small>
+            </div>
             <button class="btn secondary" type="button" onclick="openAddPersonModal()">👥 Clone to New Person</button>
           </div>
 
@@ -1831,6 +1858,19 @@ document.getElementById('topbarDate').textContent = '📅 ' + new Date().toLocal
 
         </div>
 
+        <!-- Monthly Progress (history chart) -->
+        <div class="card" id="progressCard">
+          <div class="card-header">
+            <div>
+              <h3>📊 My Monthly Progress</h3>
+              <p id="progressSubtitle">Saved footprint history for the active profile</p>
+            </div>
+            <span class="hero-tag" id="progressTrendTag" style="display: none;"></span>
+          </div>
+          <div id="progressChartWrap" style="padding: 6px 4px 2px;"></div>
+          <div id="progressEmpty" style="font-size: 13px; color: var(--muted); padding: 8px 4px 4px; line-height: 1.6;"></div>
+        </div>
+
         <!-- Action / Recommendations Preview -->
         <div class="card">
           <div class="card-header">
@@ -1861,7 +1901,8 @@ document.getElementById('topbarDate').textContent = '📅 ' + new Date().toLocal
         <h2>👥 Person-Wise Comparative Analysis</h2>
         <p>Demonstrate how carbon footprints drastically vary across diverse lifestyles, professions, and daily habits.</p>
       </div>
-      <div style="display: flex; gap: 8px;">
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button class="btn btn-sm secondary" id="myProfilesBtn" onclick="toggleMyProfiles()">🔑 My Profiles</button>
         <button class="btn btn-sm" onclick="openAddPersonModal()">+ Add New Person Profile</button>
         <button class="btn btn-sm secondary" onclick="loadSamplePersonas()">↺ Reset Default Personas</button>
       </div>
@@ -2043,6 +2084,92 @@ document.getElementById('topbarDate').textContent = '📅 ' + new Date().toLocal
   </div>
 
 
+  <!-- ======================================================== -->
+  <!-- TAB 4: HOW IT WORKS (METHODOLOGY, ASSUMPTIONS, PRIVACY) -->
+  <!-- ======================================================== -->
+  <div id="tab-about" class="tab-content">
+
+    <div class="section-head">
+      <div>
+        <h2>ℹ️ How It Works - Methodology & Data</h2>
+        <p>Full transparency: the formulas, factors, assumptions and privacy rules behind this app.</p>
+      </div>
+    </div>
+
+    <div class="about-grid">
+
+      <div class="about-card">
+        <h3>🧮 Calculation Formula</h3>
+        <p><b>Step 1 - Monthly emissions per category:</b></p>
+        <ul>
+          <li><b>Transport</b> = (car km × 0.18) + (bike km × 0.07) + (public km × 0.04) + (flight hrs × 90 ÷ 12)</li>
+          <li><b>Electricity</b> = (kWh × 0.70) + (LPG cylinders × 42.5)</li>
+          <li><b>Food</b> and <b>Waste</b> = fixed monthly values from the lifestyle option you select</li>
+        </ul>
+        <p style="margin-top: 8px;"><b>Step 2 - Totals:</b> annual tonnes = monthly total × 12 ÷ 1000; daily = monthly ÷ 30.</p>
+        <p style="margin-top: 8px;"><b>Grades:</b> up to 2.5 t/yr = Low Impact 🟢, 2.5-5.0 t = Moderate 🟡, above 5.0 t = High 🔴.</p>
+      </div>
+
+      <div class="about-card">
+        <h3>📏 Emission Factors Used</h3>
+        <table class="factor-table">
+          <thead><tr><th>Activity</th><th>Factor</th><th>Unit</th></tr></thead>
+          <tbody>
+            <tr><td>🚗 Car travel</td><td>0.18</td><td>kg CO₂e / km</td></tr>
+            <tr><td>🏍️ Motorcycle / scooter</td><td>0.07</td><td>kg CO₂e / km</td></tr>
+            <tr><td>🚌 Bus, metro & train</td><td>0.04</td><td>kg CO₂e / km</td></tr>
+            <tr><td>✈️ Flights</td><td>90.0</td><td>kg CO₂e / hour</td></tr>
+            <tr><td>⚡ Electricity</td><td>0.70</td><td>kg CO₂e / kWh</td></tr>
+            <tr><td>🔥 LPG</td><td>42.5</td><td>kg CO₂e / cylinder</td></tr>
+            <tr><td>🥗 Diet</td><td>100 / 140 / 180 / 250</td><td>kg CO₂e / month</td></tr>
+            <tr><td>🛍️ Waste & shopping</td><td>20 / 45 / 85</td><td>kg CO₂e / month</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="about-card">
+        <h3>⚠️ Assumptions & Limitations</h3>
+        <ul>
+          <li>Factors are <b>fixed approximate values</b> chosen for this classroom demonstration - not live or region-verified data. For real audits, verify against the latest published sources (for example IPCC or CEA reports).</li>
+          <li>Diet and waste are <b>broad lifestyle bands</b>, not exact meal- or item-level accounting.</li>
+          <li>Tree equivalents use a general assumption of <b>22 kg CO₂ absorbed per mature tree per year</b> - an estimate, not a certified carbon offset.</li>
+          <li>Benchmark markers (India 1.9 t, World 4.7 t, Paris target 2.0 t) are <b>illustrative reference values configured in the app</b>, not live verified averages.</li>
+          <li>Flight emissions are entered as annual hours and divided by 12 for the monthly view.</li>
+        </ul>
+      </div>
+
+      <div class="about-card">
+        <h3>🔒 Privacy & Your Data</h3>
+        <ul>
+          <li><b>Public</b> profiles are visible to everyone who opens this link - that is what powers the comparison tab.</li>
+          <li>Only the owner (your login, or the guest browser that created the profile) can <b>edit or delete</b> it - enforced by Firebase database security rules on the server, not just hidden in the app.</li>
+          <li><b>Private</b> profiles are stored under your login only; the database rules block every other user from reading them.</li>
+          <li>Your <b>monthly history</b> is saved under your login and is readable only by you.</li>
+          <li>Profiles never store your email or account details - only the activity data you enter.</li>
+        </ul>
+      </div>
+
+      <div class="about-card">
+        <h3>🛠️ Technology</h3>
+        <ul>
+          <li>Single-page web app: <b>HTML + CSS + JavaScript</b></li>
+          <li><b>Firebase Authentication</b>: email/password accounts + anonymous Guest Mode</li>
+          <li><b>Firebase Realtime Database</b> (Singapore region) for live cross-device sync</li>
+          <li>Hosted on <b>Vercel</b> with automatic deployments from GitHub</li>
+          <li>Academic project by <b>Jahir Shaikh & Vedanti</b></li>
+        </ul>
+      </div>
+
+      <div class="about-card">
+        <h3>📊 Monthly Progress Tracking</h3>
+        <p>Every time you save one of your own profiles, the app records that month's footprint under your login. The <b>My Monthly Progress</b> chart on the Calculator tab shows your last six months, so you can see whether your changes are actually reducing your footprint over time.</p>
+      </div>
+
+    </div>
+
+  </div>
+
+
 </main>
 
 <!-- Modal: Add New Person Profile -->
@@ -2112,8 +2239,16 @@ document.getElementById('topbarDate').textContent = '📅 ' + new Date().toLocal
         </div>
       </div>
 
+      <div class="form-group" style="margin-top: 12px;">
+        <label for="mVisibility">🔒 Profile Visibility</label>
+        <select class="form-control" id="mVisibility">
+          <option value="public" selected>🌍 Public - everyone can see it in the comparison</option>
+          <option value="private">🔒 Private - only I can see it</option>
+        </select>
+      </div>
+
       <p style="font-size: 12px; color: var(--muted); margin-top: 14px; line-height: 1.5;">
-        👥 Saved profiles are <b>publicly visible</b> to everyone who opens this link (needed for the comparison feature). Use a first name or nickname, not personal details.
+        👥 <b>Public</b> profiles are visible to everyone who opens this link (needed for the comparison feature) - use a first name or nickname, not personal details. <b>Private</b> profiles are readable only by your login. Only you can edit or delete your own profiles.
       </p>
       <div style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 10px;">
         <button type="button" class="btn secondary" onclick="closeAddPersonModal()">Cancel</button>
@@ -2310,14 +2445,50 @@ function showSyncToast(msg) {
   toastTimer = setTimeout(function(){ t.classList.remove('show'); }, 4000);
 }
 
+// Public pushes carry exactly the fields the database rules whitelist -
+// local-only fields like visibility never go to the public path.
+function sanitizeForPublic(p) {
+  const o = {id: p.id, name: p.name, role: p.role, avatar: p.avatar, car: p.car,
+             bike: p.bike, public: p.public, flight: p.flight, elec: p.elec,
+             lpg: p.lpg, diet: p.diet, waste: p.waste, owner: p.owner};
+  if (p.deleted) o.deleted = true;
+  return o;
+}
 function pushProfile(p) {
   if (!syncDb || !syncUid || !isCustomProfile(p)) return;
+  if (p.visibility === 'private') {
+    if (p.deleted) {
+      syncDb.ref('eco_carbon/private/' + syncUid + '/' + p.id).remove().catch(function() {});
+    } else {
+      pushPrivateProfile(p);
+    }
+    return;
+  }
   if (p.owner && p.owner !== syncUid) return; // never claim or overwrite someone else's profile
   if (knownDeleted[p.id]) return; // tombstoned on the server (deleted on another device): never resurrect
   p.owner = syncUid; // ownership stamp required by the security rules
-  syncDb.ref('eco_carbon/personas/' + p.id).set(p).catch(function() {
+  syncDb.ref('eco_carbon/personas/' + p.id).set(sanitizeForPublic(p)).catch(function() {
     showSyncToast('Cloud save failed - changes are kept on this device only.');
   });
+}
+// Private profiles live under eco_carbon/private/<uid>/ - the database rules
+// make them unreadable to everyone except the owner login.
+function pushPrivateProfile(p, onOk, onErr) {
+  if (!syncDb || !syncUid || !isCustomProfile(p)) { if (onErr) onErr('offline'); return; }
+  p.owner = syncUid;
+  p.visibility = 'private';
+  const o = Object.assign({}, p);
+  delete o.deleted;
+  syncDb.ref('eco_carbon/private/' + syncUid + '/' + p.id).set(o)
+    .then(function() { if (onOk) onOk(); })
+    .catch(function() { if (onErr) onErr('denied'); });
+}
+// Tombstones must not leak the profile's data: public readers can still read
+// tombstoned records, so scrub name/activity values when hiding or deleting.
+function scrubbedTombstone(id, owner, label) {
+  return {id: id, name: label || 'Hidden profile', role: 'Removed by owner', avatar: '🔒',
+          car: 0, bike: 0, public: 0, flight: 0, elec: 0, lpg: 0, diet: 0, waste: 0,
+          owner: owner, deleted: true};
 }
 function pushAllProfiles() { personas.forEach(function(p){ if (!p.deleted) pushProfile(p); }); }
 function schedulePush() {
@@ -2335,6 +2506,10 @@ function applyRemote(remoteList) {
   });
   lastRemoteSnapshot = snap;
   personas = mergePersonas(remoteList);
+  // My private profiles are tombstoned in the public list by design - re-add them here
+  Object.keys(privateCache).forEach(function(pid) {
+    if (!personas.some(function(p){ return p.id === pid; })) personas.push(privateCache[pid]);
+  });
   localStorage.setItem('eco_carbon_personas', JSON.stringify(personas));
   if (hadLocalOnly) pushAllProfiles(); // migrate this device's local profiles up, once
   renderPersonaPills();
@@ -2514,6 +2689,7 @@ function initSync() {
       renderPersonaPills();   // refresh 🔑 own-profile markers after login/logout
       renderComparisonView(); // refresh "Your profile" badges
       loadPersonIntoForm(activePersonId); // refresh view-only/editable state
+      attachUserListeners();  // private profiles + history for this login
     });
     syncDb = firebase.database();
     syncDb.ref('eco_carbon/personas').on('value', function(snap) {
@@ -2543,6 +2719,7 @@ function initApp() {
 
   initSync();
 
+  updateMyProfilesBtn();
   renderPersonaPills();
   loadPersonIntoForm(activePersonId);
   renderComparisonView();
@@ -2626,11 +2803,11 @@ function calculatePersonEmissions(p) {
 // ==========================================
 function renderPersonaPills() {
   const container = document.getElementById('personaPills');
-  container.innerHTML = personas.map(p => {
+  container.innerHTML = visiblePersonas().map(p => {
     const isAct = p.id === activePersonId ? 'active' : '';
     return `<button class="persona-chip ${isAct}" onclick="selectPersona('${p.id}')">
       <span>${p.avatar || '👤'}</span>
-      <span>${p.name} (${p.role.split(' ')[0]})${isOwnProfile(p) ? ' 🔑' : ''}</span>
+      <span>${p.name} (${p.role.split(' ')[0]})${isOwnProfile(p) ? ' 🔑' : ''}${p.visibility === 'private' ? ' 🔒' : ''}</span>
     </button>`;
   }).join('');
 }
@@ -2691,6 +2868,16 @@ function loadPersonIntoForm(id) {
   const note = document.getElementById('ownerNote');
   if (note) note.style.display = editable ? 'none' : 'block';
 
+  // Visibility control: only for your own custom profiles
+  const vRow = document.getElementById('visibilityRow');
+  const vSel = document.getElementById('visibilitySelect');
+  if (vRow && vSel) {
+    const showV = isCustomProfile(p) && editable;
+    vRow.style.display = showV ? 'block' : 'none';
+    if (showV) vSel.value = (p.visibility === 'private') ? 'private' : 'public';
+  }
+
+  renderProgressChart();
   updateCalculation();
 }
 
@@ -2911,6 +3098,7 @@ function saveCurrentProfileEdits() {
   p.diet = parseFloat(document.getElementById('selectDiet').value) || 140;
   p.waste = parseFloat(document.getElementById('selectWaste').value) || 20;
 
+  recordHistoryPoint(p);
   saveToStorage();
   renderComparisonView();
   runSimulation();
@@ -2929,7 +3117,10 @@ function renderComparisonView() {
   const tbody = document.getElementById('comparisonTableBody');
 
   // Render Profile Cards
-  cardsGrid.innerHTML = personas.map(p => {
+  const cmpList = visiblePersonas();
+  cardsGrid.innerHTML = cmpList.length === 0
+    ? '<div style="grid-column: 1 / -1; text-align: center; color: var(--muted); padding: 30px 10px; font-size: 14px; line-height: 1.7;">🔑 <b>My Profiles</b> filter is ON - aapne abhi tak koi profile nahi banayi.<br>Upar <b>+ Add New Person Profile</b> se apni pehli profile banayein.</div>'
+    : cmpList.map(p => {
     const res = calculatePersonEmissions(p);
     const isSel = p.id === activePersonId ? 'selected' : '';
     return `
@@ -2939,6 +3130,7 @@ function renderComparisonView() {
         <div class="person-name">${p.name}</div>
         <div class="person-role">${p.role}</div>
         ${isOwnProfile(p) ? '<div style="font-size: 11px; color: var(--primary); font-weight: 700; margin-top: 3px;">🔑 Your profile - editable by you</div>' : ''}
+        ${p.visibility === 'private' ? '<div style="font-size: 11px; color: var(--muted); font-weight: 700; margin-top: 3px;">🔒 Private - only you can see this</div>' : ''}
 
         <div class="person-metrics-mini">
           <div>
@@ -2962,7 +3154,9 @@ function renderComparisonView() {
   }).join('');
 
   // Render Table Rows
-  tbody.innerHTML = personas.map(p => {
+  tbody.innerHTML = cmpList.length === 0
+    ? '<tr><td colspan="10" style="text-align: center; color: var(--muted); padding: 18px;">No profiles to show with the current filter.</td></tr>'
+    : cmpList.map(p => {
     const res = calculatePersonEmissions(p);
     const isHighlight = p.id === activePersonId ? 'highlight-row' : '';
     return `
@@ -2996,9 +3190,15 @@ function deletePerson(id) {
     return;
   }
   if (confirm('Are you sure you want to remove this profile?')) {
-    if (isCustomProfile(p) && syncDb) {
-      p.deleted = true;  // soft-delete: propagates to all devices, no resurrection
-      pushProfile(p);
+    if (isCustomProfile(p) && syncDb && syncUid) {
+      if (p.visibility === 'private') {
+        syncDb.ref('eco_carbon/private/' + syncUid + '/' + p.id).remove().catch(function() {});
+        delete privateCache[p.id];
+      } else {
+        p.deleted = true;  // soft-delete: propagates to all devices, no resurrection
+        // scrub the public record so the tombstone does not keep the data readable
+        syncDb.ref('eco_carbon/personas/' + p.id).set(scrubbedTombstone(p.id, syncUid, 'Deleted profile')).catch(function() {});
+      }
     }
     personas = personas.filter(x => x.id !== id);
     if (activePersonId === id && personas.length > 0) {
@@ -3009,6 +3209,202 @@ function deletePerson(id) {
     loadPersonIntoForm(activePersonId);
     renderComparisonView();
   }
+}
+
+// ==========================================
+// V4: MY PROFILES FILTER, MONTHLY HISTORY, PRIVACY
+// ==========================================
+let showMineOnly = localStorage.getItem('eco_show_mine') === '1';
+let privateRef = null;
+let historyRef = null;
+let privateCache = {};
+let historyCache = {};
+try { historyCache = JSON.parse(localStorage.getItem('eco_carbon_history') || '{}') || {}; } catch(e) { historyCache = {}; }
+
+function visiblePersonas() {
+  if (!showMineOnly) return personas;
+  return personas.filter(function(p){ return isCustomProfile(p) && (isOwnProfile(p) || !p.owner); });
+}
+function toggleMyProfiles() {
+  showMineOnly = !showMineOnly;
+  localStorage.setItem('eco_show_mine', showMineOnly ? '1' : '0');
+  updateMyProfilesBtn();
+  renderPersonaPills();
+  renderComparisonView();
+}
+function updateMyProfilesBtn() {
+  const b = document.getElementById('myProfilesBtn');
+  if (!b) return;
+  b.textContent = showMineOnly ? '🔑 My Profiles: ON' : '🔑 My Profiles';
+  b.style.borderColor = showMineOnly ? 'var(--primary)' : '';
+  b.style.color = showMineOnly ? 'var(--primary)' : '';
+}
+
+// ----- Monthly history: saved under your login only -----
+function monthKeyNow() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+}
+function recordHistoryPoint(p) {
+  if (!isCustomProfile(p)) return;
+  if (!(isOwnProfile(p) || !p.owner)) return;
+  const kg = Math.round(calculatePersonEmissions(p).monthlyTotal);
+  const mk = monthKeyNow();
+  historyCache[p.id] = historyCache[p.id] || {};
+  historyCache[p.id][mk] = kg;
+  localStorage.setItem('eco_carbon_history', JSON.stringify(historyCache));
+  if (syncDb && syncUid) {
+    syncDb.ref('eco_carbon/history/' + syncUid + '/' + p.id + '/' + mk).set(kg).catch(function() {});
+  }
+  renderProgressChart();
+}
+function monthLabel(mk) {
+  const parts = mk.split('-');
+  const names = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const m = parseInt(parts[1], 10);
+  return (names[m - 1] || mk) + ' ' + String(parts[0]).slice(2);
+}
+function renderProgressChart() {
+  const wrap = document.getElementById('progressChartWrap');
+  const empty = document.getElementById('progressEmpty');
+  const tag = document.getElementById('progressTrendTag');
+  if (!wrap || !empty) return;
+  const p = personas.find(item => item.id === activePersonId);
+  const own = p && isCustomProfile(p) && (isOwnProfile(p) || !p.owner);
+  const hist = (p && historyCache[p.id]) || {};
+  const months = Object.keys(hist).sort().slice(-6);
+  if (!p || !own || months.length === 0) {
+    wrap.innerHTML = '';
+    if (tag) tag.style.display = 'none';
+    empty.style.display = 'block';
+    empty.innerHTML = (!p || !isCustomProfile(p))
+      ? 'History is recorded for profiles you create (not the sample personas). Create your own profile, then save it every month to build your progress chart.'
+      : (own
+        ? 'Abhi koi saved history nahi hai. Jab bhi aap <b>Save Changes</b> dabate hain, us month ka footprint yahan record ho jata hai. Agle months phir save karke apna progress chart dekhein. History sirf aapke login ko dikhti hai.'
+        : 'Ye profile kisi aur ne banayi hai - iski history aapke yahan save nahi hoti.');
+    return;
+  }
+  empty.style.display = 'none';
+  const vals = months.map(function(mk){ return hist[mk]; });
+  const max = Math.max.apply(null, vals.concat([1]));
+  const W = 320, H = 132, base = 104, top = 14;
+  const bw = Math.min(34, (W - 40) / months.length - 14);
+  const gap = (W - 40) / months.length;
+  let bars = '';
+  months.forEach(function(mk, i) {
+    const h = Math.max(3, Math.round((vals[i] / max) * (base - top)));
+    const x = 20 + i * gap + (gap - bw) / 2;
+    const y = base - h;
+    bars += '<rect x="' + x.toFixed(1) + '" y="' + y + '" width="' + bw + '" height="' + h + '" rx="4" fill="#4ade80" opacity="0.85"></rect>';
+    bars += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (y - 5) + '" text-anchor="middle" font-size="10" fill="#eaf6ee" font-weight="700">' + vals[i] + '</text>';
+    bars += '<text x="' + (x + bw / 2).toFixed(1) + '" y="' + (base + 14) + '" text-anchor="middle" font-size="10" fill="#a7bdaa">' + monthLabel(mk) + '</text>';
+  });
+  wrap.innerHTML = '<svg viewBox="0 0 ' + W + ' ' + H + '" style="width: 100%; height: auto; display: block;">'
+    + '<line x1="14" y1="' + base + '" x2="' + (W - 14) + '" y2="' + base + '" stroke="rgba(120,200,150,0.25)" stroke-width="1"/>'
+    + bars + '</svg>'
+    + '<div style="font-size: 11px; color: var(--muted); text-align: center; margin-top: 2px;">kg CO₂e per month (last ' + months.length + ' saved month' + (months.length > 1 ? 's' : '') + ')</div>';
+  if (tag) {
+    if (months.length >= 2) {
+      const prev = vals[vals.length - 2], cur = vals[vals.length - 1];
+      const diff = cur - prev;
+      const pct = prev > 0 ? Math.round((diff / prev) * 100) : 0;
+      const better = diff < 0;
+      tag.style.display = '';
+      tag.textContent = better ? ('▼ ' + Math.abs(pct) + '% vs ' + monthLabel(months[months.length - 2]) + ' - improving!')
+        : (diff === 0 ? '● Same as ' + monthLabel(months[months.length - 2]) : ('▲ +' + pct + '% vs ' + monthLabel(months[months.length - 2])));
+      tag.style.color = better ? 'var(--primary)' : '#f87171';
+    } else {
+      tag.style.display = '';
+      tag.textContent = 'First record saved';
+      tag.style.color = 'var(--muted)';
+    }
+  }
+}
+
+// ----- Public / Private choice (server-enforced by database rules) -----
+// Conversions are one atomic multi-location update: private copy + scrubbed
+// public tombstone are written together, so a failure changes nothing and the
+// public record never keeps the profile's real name or activity data.
+function changeVisibility(val) {
+  const p = personas.find(function(x){ return x.id === activePersonId; });
+  const vSel = document.getElementById('visibilitySelect');
+  if (!p || !isCustomProfile(p) || !canEditProfile(p)) { if (vSel) vSel.value = 'public'; return; }
+  if (!syncDb || !syncUid) {
+    if (vSel) vSel.value = (p.visibility === 'private') ? 'private' : 'public';
+    showSyncToast('Visibility badalne ke liye cloud sync connect hona chahiye.');
+    return;
+  }
+  if (val === 'private') {
+    const priv = Object.assign({}, p, {owner: syncUid, visibility: 'private'});
+    delete priv.deleted;
+    const updates = {};
+    updates['eco_carbon/private/' + syncUid + '/' + p.id] = priv;
+    updates['eco_carbon/personas/' + p.id] = scrubbedTombstone(p.id, syncUid, 'Private profile');
+    syncDb.ref().update(updates).then(function() {
+      p.owner = syncUid;
+      p.visibility = 'private';
+      privateCache[p.id] = p;
+      saveToStorage();
+      renderPersonaPills();
+      renderComparisonView();
+      showSyncToast('🔒 Profile ab Private hai - sirf aapke login ko dikhegi.');
+    }).catch(function() {
+      if (vSel) vSel.value = 'public';
+      showSyncToast('Private option abhi active nahi hua - database rules update pending hai. Profile public hi hai.');
+    });
+  } else {
+    const pub = sanitizeForPublic(Object.assign({}, p, {owner: syncUid, visibility: 'public'}));
+    const updates = {};
+    updates['eco_carbon/personas/' + p.id] = pub;
+    updates['eco_carbon/private/' + syncUid + '/' + p.id] = null;
+    syncDb.ref().update(updates).then(function() {
+      p.visibility = 'public';
+      delete privateCache[p.id];
+      delete knownDeleted[p.id];
+      saveToStorage();
+      renderPersonaPills();
+      renderComparisonView();
+      showSyncToast('🌍 Profile ab Public hai - comparison mein sabko dikhegi.');
+    }).catch(function() {
+      if (vSel) vSel.value = 'private';
+      showSyncToast('Public karne mein dikkat aayi - profile abhi Private hi hai.');
+    });
+  }
+}
+
+// ----- Per-login listeners: my private profiles + my history -----
+function applyPrivateRemote(obj) {
+  const list = Object.values(obj || {}).filter(function(p){ return p && p.id && !p.deleted; });
+  privateCache = {};
+  list.forEach(function(p){ p.visibility = 'private'; privateCache[p.id] = p; });
+  // Drop my private profiles that are gone remotely; add/update the rest
+  personas = personas.filter(function(p){ return !(p.visibility === 'private' && syncUid && p.owner === syncUid && !privateCache[p.id]); });
+  list.forEach(function(r) {
+    const i = personas.findIndex(function(p){ return p.id === r.id; });
+    if (i >= 0) personas[i] = r; else personas.push(r);
+  });
+  localStorage.setItem('eco_carbon_personas', JSON.stringify(personas));
+  renderPersonaPills();
+  renderComparisonView();
+  renderProgressChart();
+}
+function attachUserListeners() {
+  if (!syncDb) return;
+  if (privateRef) { privateRef.off(); privateRef = null; }
+  if (historyRef) { historyRef.off(); historyRef = null; }
+  privateCache = {};
+  if (!syncUid) return;
+  privateRef = syncDb.ref('eco_carbon/private/' + syncUid);
+  privateRef.on('value', function(snap) { applyPrivateRemote(snap.val() || {}); }, function() {});
+  historyRef = syncDb.ref('eco_carbon/history/' + syncUid);
+  historyRef.on('value', function(snap) {
+    const val = snap.val() || {};
+    Object.keys(val).forEach(function(pid) {
+      historyCache[pid] = Object.assign(historyCache[pid] || {}, val[pid] || {});
+    });
+    localStorage.setItem('eco_carbon_history', JSON.stringify(historyCache));
+    renderProgressChart();
+  }, function() {});
 }
 
 // ==========================================
@@ -3128,11 +3524,13 @@ function handleCreatePerson(e) {
     elec: parseFloat(document.getElementById('mElec').value) || 0,
     lpg: 0.5,
     diet: parseFloat(document.getElementById('mDiet').value) || 140,
-    waste: parseFloat(document.getElementById('mWaste').value) || 45
+    waste: parseFloat(document.getElementById('mWaste').value) || 45,
+    visibility: (document.getElementById('mVisibility') && document.getElementById('mVisibility').value === 'private') ? 'private' : 'public'
   };
 
   personas.push(newProfile);
   activePersonId = newId;
+  recordHistoryPoint(newProfile);
   saveToStorage();
 
   closeAddPersonModal();
@@ -3447,4 +3845,5 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 <div id="syncToast"></div>
 </body>
 </html>
+
 
