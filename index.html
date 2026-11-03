@@ -2112,7 +2112,10 @@ document.getElementById('topbarDate').textContent = '📅 ' + new Date().toLocal
         </div>
       </div>
 
-      <div style="margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px;">
+      <p style="font-size: 12px; color: var(--muted); margin-top: 14px; line-height: 1.5;">
+        👥 Saved profiles are <b>publicly visible</b> to everyone who opens this link (needed for the comparison feature). Use a first name or nickname, not personal details.
+      </p>
+      <div style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 10px;">
         <button type="button" class="btn secondary" onclick="closeAddPersonModal()">Cancel</button>
         <button type="submit" class="btn">Create & Compare Person</button>
       </div>
@@ -2153,6 +2156,9 @@ document.getElementById('topbarDate').textContent = '📅 ' + new Date().toLocal
       </div>
       <p style="font-size: 12px; color: var(--muted); margin-top: 14px; line-height: 1.5;">
         ☁️ With an account, the profiles you create are saved to <b>your login</b> in the cloud backend (Firebase). Login again on any device or browser to see and edit the same profiles. Guest Mode keeps profiles linked to this browser only.
+      </p>
+      <p style="font-size: 12px; color: #fbbf24; margin-top: 8px; line-height: 1.5; background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.25); border-radius: 8px; padding: 8px 12px;">
+        👥 Note: saved profiles are <b>visible to everyone</b> who opens this link - that is how the comparison feature works. Only the profile name and activity numbers are shown; your <b>email is never stored</b> in any profile.
       </p>
     </form>
   </div>
@@ -2287,6 +2293,7 @@ function mergePersonas(remoteList) {
 // Only custom profiles (created via "Add New Person") sync across devices.
 // Built-in sample personas stay local to each device and are never claimed.
 function isCustomProfile(p) { return !!(p && p.id && String(p.id).indexOf('p_') === 0); }
+function isOwnProfile(p) { return !!(p && p.owner && syncUid && p.owner === syncUid); }
 function canEditProfile(p) {
   if (!isCustomProfile(p)) return true;          // built-ins: local edit, unsynced
   if (!p.owner) return true;                     // created here, not yet synced
@@ -2621,7 +2628,7 @@ function renderPersonaPills() {
     const isAct = p.id === activePersonId ? 'active' : '';
     return `<button class="persona-chip ${isAct}" onclick="selectPersona('${p.id}')">
       <span>${p.avatar || '👤'}</span>
-      <span>${p.name} (${p.role.split(' ')[0]})</span>
+      <span>${p.name} (${p.role.split(' ')[0]})${isOwnProfile(p) ? ' 🔑' : ''}</span>
     </button>`;
   }).join('');
 }
@@ -2929,6 +2936,7 @@ function renderComparisonView() {
         <div class="person-avatar">${p.avatar || '👤'}</div>
         <div class="person-name">${p.name}</div>
         <div class="person-role">${p.role}</div>
+        ${isOwnProfile(p) ? '<div style="font-size: 11px; color: var(--primary); font-weight: 700; margin-top: 3px;">🔑 Your profile - editable by you</div>' : ''}
 
         <div class="person-metrics-mini">
           <div>
