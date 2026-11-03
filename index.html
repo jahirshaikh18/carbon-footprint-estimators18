@@ -1494,6 +1494,8 @@ body {
 <div class="topbar">
   <span class="topbar-live"><span class="live-dot"></span> Live</span>
   <span class="topbar-chip" id="topbarDate"></span>
+  <span class="topbar-chip" id="authStatusChip">👤 Guest Mode</span>
+  <button class="btn btn-sm" id="authBtn" onclick="onAuthButton()" style="padding: 5px 14px; font-size: 12px;">🔐 Login</button>
   <span class="topbar-chip topbar-chip-accent">🌏 Personal CO₂e Command Center</span>
 </div>
 <script>
@@ -2031,7 +2033,7 @@ document.getElementById('topbarDate').textContent = '📅 ' + new Date().toLocal
           </div>
 
           <div style="display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 13px; font-weight: 700; color: #4ade80;">
-            <span>🌳 Equivalent to planting <b>55 mature trees</b></span>
+            <span>🌳 Equivalent to planting <b id="simTreesSaved">55 mature trees</b></span>
           </div>
         </div>
 
@@ -2114,6 +2116,44 @@ document.getElementById('topbarDate').textContent = '📅 ' + new Date().toLocal
         <button type="button" class="btn secondary" onclick="closeAddPersonModal()">Cancel</button>
         <button type="submit" class="btn">Create & Compare Person</button>
       </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal: Login / Sign Up -->
+<div class="modal-overlay" id="loginModal">
+  <div class="modal-window" style="max-width: 470px;">
+    <div class="modal-header">
+      <h3 id="loginModalTitle">🔐 Login to Your Account</h3>
+      <button class="modal-close" onclick="closeLoginModal()">×</button>
+    </div>
+    <div style="display: flex; gap: 8px; margin-bottom: 18px;">
+      <button type="button" class="btn btn-sm" id="authTabLogin" style="flex: 1;" onclick="setAuthMode('login')">Login</button>
+      <button type="button" class="btn btn-sm secondary" id="authTabSignup" style="flex: 1;" onclick="setAuthMode('signup')">Sign Up</button>
+    </div>
+    <form id="loginForm" onsubmit="handleAuthSubmit(event)">
+      <div class="form-group" id="nameFieldGroup" style="display: none;">
+        <label for="authName">Your Name (optional)</label>
+        <input type="text" class="form-control" id="authName" placeholder="e.g. Jahir" autocomplete="name">
+      </div>
+      <div class="form-group">
+        <label for="authEmail">Email Address</label>
+        <input type="email" class="form-control" id="authEmail" placeholder="you@example.com" autocomplete="email" required>
+      </div>
+      <div class="form-group">
+        <label for="authPassword">Password</label>
+        <input type="password" class="form-control" id="authPassword" placeholder="Minimum 6 characters" autocomplete="current-password" required minlength="6">
+        <small class="form-hint" id="passwordHint" style="display: none;">Choose any password of 6+ characters. Save it - you will need it to login again on any device.</small>
+      </div>
+      <div id="authError" style="display: none; font-size: 12.5px; color: #f87171; background: rgba(248,113,113,0.10); border: 1px solid rgba(248,113,113,0.32); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;"></div>
+      <div id="authInfo" style="display: none; font-size: 12.5px; color: #4ade80; background: rgba(74,222,128,0.10); border: 1px solid rgba(74,222,128,0.32); border-radius: 8px; padding: 8px 12px; margin-bottom: 12px;"></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap;">
+        <button type="button" onclick="handlePasswordReset()" style="background: none; border: none; color: var(--primary); font-size: 12.5px; font-weight: 700; cursor: pointer; padding: 4px 0; font-family: inherit;">Forgot password?</button>
+        <button type="submit" class="btn" id="authSubmitBtn">Login</button>
+      </div>
+      <p style="font-size: 12px; color: var(--muted); margin-top: 14px; line-height: 1.5;">
+        ☁️ With an account, the profiles you create are saved to <b>your login</b> in the cloud backend (Firebase). Login again on any device or browser to see and edit the same profiles. Guest Mode keeps profiles linked to this browser only.
+      </p>
     </form>
   </div>
 </div>
@@ -2210,12 +2250,17 @@ let activePersonId = 'p1';
 // ==========================================
 // CLOUD SYNC ENGINE (Firebase Realtime Database)
 // Cross-device person-wise profiles: public read, authenticated
-// per-profile writes (Firebase anonymous auth). localStorage stays
-// as the offline cache; without config the app works exactly as before.
+// per-profile writes. Users can create an account (email + password,
+// Firebase Auth) or stay in Guest Mode (anonymous auth). Profiles made
+// while logged in are owned by the account and reopen on any device
+// after login. localStorage stays as the offline cache; without config
+// the app works exactly as before.
 // ==========================================
 const FIREBASE_CONFIG = {apiKey:"AIzaSyBEUZAfmk-d1s79DtLE6U3o95KWHsTnd34",authDomain:"carbon-footprint-estimater.firebaseapp.com",databaseURL:"https://carbon-footprint-estimater-default-rtdb.asia-southeast1.firebasedatabase.app",projectId:"carbon-footprint-estimater",storageBucket:"carbon-footprint-estimater.firebasestorage.app",messagingSenderId:"412453988300",appId:"1:412453988300:web:58f8bfe99f97b3af585f69"};
 let syncDb = null;
 let syncUid = null;
+let authUser = null;      // full Firebase user object (anonymous guest or logged-in account)
+let authMode = 'login';   // current tab in the login modal
 let lastRemoteSnapshot = null;
 let pushTimer = null;
 let pushPending = false;
@@ -2293,18 +2338,174 @@ function applyRemote(remoteList) {
   runSimulation();
 }
 
+// ==========================================
+// ACCOUNT LOGIN / SIGN UP (Firebase Authentication)
+// Registered users keep their profiles under one account across
+// devices. Signing up from Guest Mode links the existing guest
+// session, so profiles made before signup stay owned by the user.
+// ==========================================
+function isLoggedIn() { return !!(authUser && !authUser.isAnonymous); }
+
+function updateAuthUI() {
+  const chip = document.getElementById('authStatusChip');
+  const btn = document.getElementById('authBtn');
+  if (chip) {
+    if (!authUser) chip.textContent = '👤 Connecting...';
+    else if (authUser.isAnonymous) chip.textContent = '👤 Guest Mode';
+    else chip.textContent = '👤 ' + (authUser.displayName || authUser.email || 'Account');
+  }
+  if (btn) btn.innerHTML = isLoggedIn() ? '🚪 Logout' : '🔐 Login';
+}
+
+function onAuthButton() {
+  if (isLoggedIn()) {
+    const label = authUser.email || 'your account';
+    if (confirm('Logout from ' + label + '?\nYour profiles stay saved in the cloud - login again anytime to get them back.')) {
+      firebase.auth().signOut().then(function() {
+        showSyncToast('Logged out. You are now in Guest Mode.');
+      }).catch(function() {});
+    }
+  } else {
+    openLoginModal('login');
+  }
+}
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const isSignup = mode === 'signup';
+  document.getElementById('loginModalTitle').textContent = isSignup ? '📝 Create Your Account' : '🔐 Login to Your Account';
+  document.getElementById('authSubmitBtn').textContent = isSignup ? 'Create Account' : 'Login';
+  document.getElementById('nameFieldGroup').style.display = isSignup ? 'block' : 'none';
+  document.getElementById('passwordHint').style.display = isSignup ? 'block' : 'none';
+  document.getElementById('authPassword').setAttribute('autocomplete', isSignup ? 'new-password' : 'current-password');
+  const tabL = document.getElementById('authTabLogin');
+  const tabS = document.getElementById('authTabSignup');
+  tabL.className = 'btn btn-sm' + (isSignup ? ' secondary' : '');
+  tabS.className = 'btn btn-sm' + (isSignup ? '' : ' secondary');
+  clearAuthMessages();
+}
+
+function openLoginModal(mode) {
+  setAuthMode(mode || 'login');
+  document.getElementById('loginModal').classList.add('open');
+}
+function closeLoginModal() {
+  document.getElementById('loginModal').classList.remove('open');
+  clearAuthMessages();
+  const sb = document.getElementById('authSubmitBtn');
+  if (sb) sb.disabled = false;
+}
+
+function showAuthError(msg) {
+  const el = document.getElementById('authError');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('authInfo').style.display = 'none';
+}
+function showAuthInfo(msg) {
+  const el = document.getElementById('authInfo');
+  el.textContent = msg;
+  el.style.display = 'block';
+  document.getElementById('authError').style.display = 'none';
+}
+function clearAuthMessages() {
+  document.getElementById('authError').style.display = 'none';
+  document.getElementById('authInfo').style.display = 'none';
+}
+
+function friendlyAuthError(err) {
+  const code = (err && err.code) || '';
+  const map = {
+    'auth/invalid-email': 'Email address ka format sahi nahi hai. Please check it.',
+    'auth/user-disabled': 'This account has been disabled.',
+    'auth/user-not-found': 'No account found with this email. Use Sign Up to create one.',
+    'auth/wrong-password': 'Password galat hai. Try again or use Forgot password.',
+    'auth/invalid-credential': 'Email ya password sahi nahi hai. Check karke dobara try karein.',
+    'auth/invalid-login-credentials': 'Email ya password sahi nahi hai. Check karke dobara try karein.',
+    'auth/email-already-in-use': 'Is email ka account pehle se hai. Login tab use karein.',
+    'auth/credential-already-in-use': 'Is email ka account pehle se hai. Login tab use karein.',
+    'auth/weak-password': 'Password kam se kam 6 characters ka hona chahiye.',
+    'auth/too-many-requests': 'Bahut zyada attempts ho gaye. Thodi der baad try karein.',
+    'auth/network-request-failed': 'Network error. Internet connection check karke dobara try karein.'
+  };
+  return map[code] || ('Could not complete: ' + ((err && err.message) || 'unknown error'));
+}
+
+function handleAuthSubmit(e) {
+  e.preventDefault();
+  if (typeof firebase === 'undefined' || !firebase.auth) {
+    showAuthError('Login service abhi load nahi hui. Page refresh karke try karein.');
+    return;
+  }
+  const email = document.getElementById('authEmail').value.trim();
+  const password = document.getElementById('authPassword').value;
+  const name = document.getElementById('authName').value.trim();
+  const submitBtn = document.getElementById('authSubmitBtn');
+  clearAuthMessages();
+  submitBtn.disabled = true;
+
+  function finishOk(msg) {
+    submitBtn.disabled = false;
+    closeLoginModal();
+    showSyncToast(msg);
+  }
+  function finishErr(err) {
+    submitBtn.disabled = false;
+    showAuthError(friendlyAuthError(err));
+  }
+
+  if (authMode === 'signup') {
+    const current = firebase.auth().currentUser;
+    let p;
+    if (current && current.isAnonymous) {
+      // Link the guest session so previously created profiles stay owned by this user
+      const cred = firebase.auth.EmailAuthProvider.credential(email, password);
+      p = current.linkWithCredential(cred);
+    } else {
+      p = firebase.auth().createUserWithEmailAndPassword(email, password);
+    }
+    p.then(function(uc) {
+      if (name && uc && uc.user) {
+        uc.user.updateProfile({ displayName: name }).then(updateAuthUI).catch(function() {});
+      }
+      finishOk('Account ban gaya! Ab aapke profiles aapke login ke saath cloud mein save honge.');
+    }).catch(finishErr);
+  } else {
+    firebase.auth().signInWithEmailAndPassword(email, password)
+      .then(function() { finishOk('Login ho gaya! Aapke saved profiles load ho rahe hain.'); })
+      .catch(finishErr);
+  }
+}
+
+function handlePasswordReset() {
+  if (typeof firebase === 'undefined' || !firebase.auth) return;
+  const email = document.getElementById('authEmail').value.trim();
+  if (!email) {
+    showAuthError('Pehle apna email address upar likhein, phir Forgot password dabayein.');
+    return;
+  }
+  firebase.auth().sendPasswordResetEmail(email)
+    .then(function() { showAuthInfo('Password reset email bhej diya hai: ' + email + '. Inbox (aur spam) check karein.'); })
+    .catch(function(err) { showAuthError(friendlyAuthError(err)); });
+}
+
 function initSync() {
   if (!FIREBASE_CONFIG) return;
   try {
     firebase.initializeApp(FIREBASE_CONFIG);
     firebase.auth().onAuthStateChanged(function(u) {
+      authUser = u;
       syncUid = u ? u.uid : null;
+      if (!u) {
+        // Signed out (or first visit): fall back to Guest Mode so the app keeps working
+        firebase.auth().signInAnonymously().catch(function(){});
+      }
       // Only push after the first server snapshot arrives, so stale local data can never
       // overwrite the cloud (e.g. a profile deleted on another device).
       if (syncUid && gotFirstRemote) { pushPending = false; pushAllProfiles(); } // own + unsynced-local only; foreign-owned skipped
+      updateAuthUI();
       loadPersonIntoForm(activePersonId); // refresh view-only/editable state
     });
-    firebase.auth().signInAnonymously().catch(function(){});
     syncDb = firebase.database();
     syncDb.ref('eco_carbon/personas').on('value', function(snap) {
       const val = snap.val() || {};
@@ -2852,6 +3053,8 @@ function runSimulation() {
   document.getElementById('simBaselineVal').textContent = `${baseline.annualTotalTonnes.toFixed(1)} tonnes / yr`;
   document.getElementById('simNewVal').textContent = `${simRes.annualTotalTonnes.toFixed(1)} tonnes / yr`;
   document.getElementById('simPctVal').textContent = `-${pctCut.toFixed(1)}%`;
+  const treesEl = document.getElementById('simTreesSaved');
+  if (treesEl) treesEl.textContent = `${treesSaved.toLocaleString()} mature trees`;
 }
 
 // ==========================================
@@ -3234,3 +3437,4 @@ if (document.readyState === 'complete' || document.readyState === 'interactive')
 <div id="syncToast"></div>
 </body>
 </html>
+
