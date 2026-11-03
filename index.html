@@ -2475,6 +2475,7 @@ function pushProfile(p) {
 // make them unreadable to everyone except the owner login.
 function pushPrivateProfile(p, onOk, onErr) {
   if (!syncDb || !syncUid || !isCustomProfile(p)) { if (onErr) onErr('offline'); return; }
+  if (p.owner && p.owner !== syncUid) { if (onErr) onErr('foreign'); return; } // never claim another identity's private profile
   p.owner = syncUid;
   p.visibility = 'private';
   const o = Object.assign({}, p);
@@ -2684,12 +2685,12 @@ function initSync() {
       }
       // Only push after the first server snapshot arrives, so stale local data can never
       // overwrite the cloud (e.g. a profile deleted on another device).
+      attachUserListeners();  // FIRST: purge prior identity's private data + reattach listeners for this login
       if (syncUid && gotFirstRemote) { pushPending = false; pushAllProfiles(); } // own + unsynced-local only; foreign-owned skipped
       updateAuthUI();
       renderPersonaPills();   // refresh 🔑 own-profile markers after login/logout
       renderComparisonView(); // refresh "Your profile" badges
       loadPersonIntoForm(activePersonId); // refresh view-only/editable state
-      attachUserListeners();  // private profiles + history for this login
     });
     syncDb = firebase.database();
     syncDb.ref('eco_carbon/personas').on('value', function(snap) {
