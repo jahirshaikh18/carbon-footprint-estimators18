@@ -2511,6 +2511,8 @@ function initSync() {
       // overwrite the cloud (e.g. a profile deleted on another device).
       if (syncUid && gotFirstRemote) { pushPending = false; pushAllProfiles(); } // own + unsynced-local only; foreign-owned skipped
       updateAuthUI();
+      renderPersonaPills();   // refresh 🔑 own-profile markers after login/logout
+      renderComparisonView(); // refresh "Your profile" badges
       loadPersonIntoForm(activePersonId); // refresh view-only/editable state
     });
     syncDb = firebase.database();
